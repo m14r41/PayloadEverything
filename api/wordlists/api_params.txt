@@ -1,0 +1,182 @@
+# API Parameter Discovery Wordlist — Top 100+ Names
+# Use with: Arjun, Burp Param Miner, ffuf parameter fuzzing
+# arjun -u https://api.target.com/api/v1/users -w api_params.txt
+
+# ============================================================
+# IDENTITY / AUTH
+# ============================================================
+id
+user_id
+userId
+uid
+account_id
+accountId
+username
+email
+name
+token
+api_key
+apikey
+api_token
+access_token
+auth_token
+session
+session_id
+sessionId
+password
+secret
+key
+
+# ============================================================
+# PAGINATION / FILTERING
+# ============================================================
+page
+limit
+offset
+per_page
+perPage
+pageSize
+page_size
+skip
+count
+cursor
+after
+before
+sort
+order
+orderBy
+order_by
+sortBy
+sort_by
+direction
+asc
+desc
+filter
+query
+q
+search
+keyword
+term
+
+# ============================================================
+# IDOR TARGETS
+# ============================================================
+user_id
+userId
+account_id
+accountId
+org_id
+orgId
+organization_id
+team_id
+teamId
+project_id
+projectId
+order_id
+orderId
+invoice_id
+document_id
+file_id
+fileId
+message_id
+comment_id
+post_id
+item_id
+resource_id
+ref
+reference
+
+# ============================================================
+# MASS ASSIGNMENT
+# ============================================================
+role
+admin
+is_admin
+isAdmin
+is_superuser
+permissions
+access_level
+user_type
+group
+groups
+verified
+email_verified
+active
+is_active
+status
+approved
+plan
+subscription
+credits
+balance
+discount
+
+# ============================================================
+# COMMON API PARAMS
+# ============================================================
+callback
+redirect
+redirect_uri
+redirect_url
+return_url
+returnUrl
+next
+url
+uri
+link
+href
+path
+file
+filename
+filepath
+source
+target
+dest
+destination
+from
+to
+type
+format
+output
+content_type
+accept
+lang
+locale
+language
+timezone
+tz
+version
+v
+fields
+include
+exclude
+expand
+embed
+select
+with
+populate
+depth
+
+# ============================================================
+# DEBUG / INTERNAL
+# ============================================================
+debug
+test
+verbose
+raw
+internal
+admin
+mode
+env
+config
+_method
+_token
+_csrf
+timestamp
+nonce
+signature
+sign
+hash
+hmac
+callback
+jsonp

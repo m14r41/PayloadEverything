@@ -1,0 +1,262 @@
+# API Endpoint Discovery Wordlist — Top 200+ Paths
+# Use with: ffuf -u https://api.target.com/FUZZ -w api_endpoints.txt
+# Also: dirsearch, feroxbuster, gobuster, kiterunner
+
+# ============================================================
+# AUTHENTICATION & SESSION
+# ============================================================
+/api/login
+/api/signin
+/api/auth/login
+/api/auth/signin
+/api/auth/register
+/api/auth/signup
+/api/auth/logout
+/api/auth/refresh
+/api/auth/token
+/api/auth/verify
+/api/auth/forgot-password
+/api/auth/reset-password
+/api/auth/change-password
+/api/auth/mfa
+/api/auth/otp
+/api/auth/2fa
+/api/auth/sso
+/api/auth/oauth
+/api/auth/oauth/callback
+/api/auth/saml
+/api/auth/session
+/api/auth/me
+/api/token
+/api/oauth/token
+/api/oauth/authorize
+
+# ============================================================
+# USER MANAGEMENT
+# ============================================================
+/api/users
+/api/users/me
+/api/users/profile
+/api/users/settings
+/api/users/preferences
+/api/user
+/api/user/info
+/api/user/update
+/api/user/delete
+/api/account
+/api/accounts
+/api/profile
+/api/profiles
+/api/members
+/api/roles
+/api/permissions
+/api/invitations
+/api/invites
+
+# ============================================================
+# ADMIN / INTERNAL
+# ============================================================
+/api/admin
+/api/admin/users
+/api/admin/dashboard
+/api/admin/settings
+/api/admin/config
+/api/admin/logs
+/api/admin/audit
+/api/admin/metrics
+/api/admin/stats
+/api/admin/reports
+/api/admin/billing
+/api/admin/analytics
+/api/internal
+/api/internal/users
+/api/internal/config
+/api/internal/health
+/api/internal/debug
+/api/manage
+/api/management
+/api/console
+/api/backoffice
+/api/staff
+/api/superadmin
+/api/system
+/api/system/info
+/api/system/config
+
+# ============================================================
+# COMMON RESOURCES
+# ============================================================
+/api/posts
+/api/articles
+/api/comments
+/api/messages
+/api/notifications
+/api/orders
+/api/products
+/api/items
+/api/categories
+/api/tags
+/api/files
+/api/uploads
+/api/images
+/api/media
+/api/documents
+/api/attachments
+/api/invoices
+/api/payments
+/api/transactions
+/api/subscriptions
+/api/plans
+/api/events
+/api/logs
+/api/reports
+/api/exports
+/api/imports
+/api/search
+/api/feed
+/api/timeline
+
+# ============================================================
+# ORGANIZATION / TEAM
+# ============================================================
+/api/organizations
+/api/orgs
+/api/teams
+/api/projects
+/api/workspaces
+/api/groups
+/api/departments
+/api/tenants
+
+# ============================================================
+# API INFRASTRUCTURE
+# ============================================================
+/api/health
+/api/healthcheck
+/api/health-check
+/api/status
+/api/ping
+/api/version
+/api/info
+/api/config
+/api/env
+/api/debug
+/api/metrics
+/api/stats
+/api/docs
+/api/swagger
+/api/swagger.json
+/api/swagger.yaml
+/api/openapi
+/api/openapi.json
+/api/openapi.yaml
+/api/schema
+/api/graphql
+/api/graphql/console
+/api/graphiql
+/api/playground
+/api/explorer
+/api/spec
+/api/redoc
+
+# ============================================================
+# VERSIONED ENDPOINTS
+# ============================================================
+/api/v1
+/api/v2
+/api/v3
+/api/v1/users
+/api/v2/users
+/api/v1/auth/login
+/api/v2/auth/login
+
+# ============================================================
+# WEBHOOKS & INTEGRATIONS
+# ============================================================
+/api/webhooks
+/api/hooks
+/api/integrations
+/api/callbacks
+/api/connect
+/api/connectors
+/api/plugins
+/api/extensions
+
+# ============================================================
+# DATA / EXPORT
+# ============================================================
+/api/export
+/api/export/csv
+/api/export/json
+/api/export/pdf
+/api/import
+/api/bulk
+/api/batch
+/api/download
+/api/backup
+/api/restore
+/api/sync
+/api/migrate
+
+# ============================================================
+# API KEY / TOKEN MANAGEMENT
+# ============================================================
+/api/keys
+/api/api-keys
+/api/tokens
+/api/credentials
+/api/secrets
+/api/apps
+/api/applications
+/api/clients
+
+# ============================================================
+# COMMON NON-/api/ PATHS
+# ============================================================
+/.well-known/openid-configuration
+/.well-known/jwks.json
+/.well-known/security.txt
+/.well-known/assetlinks.json
+/.well-known/apple-app-site-association
+/graphql
+/graphiql
+/playground
+/swagger
+/swagger-ui
+/swagger-ui.html
+/swagger/index.html
+/swagger/v1/swagger.json
+/api-docs
+/redoc
+/actuator
+/actuator/health
+/actuator/env
+/actuator/info
+/actuator/beans
+/actuator/mappings
+/actuator/configprops
+/actuator/heapdump
+/actuator/threaddump
+/actuator/loggers
+/actuator/metrics
+/_debug
+/_profiler
+/_status
+/__debug__
+/debug/vars
+/debug/pprof
+/server-info
+/server-status
+/phpinfo
+/elmah.axd
+/trace
+/error
+/env
+/metrics
+/info
+/jolokia
+/jolokia/list
+/console
+/h2-console
+/management
+/monitoring
