@@ -8,8 +8,12 @@ Full DLL-injection toolkit for thick-client testing: the injector, two payload f
 
 ```
 process-injection-2/
-├── pop.cpp                     injector source
-├── pop.exe                     pre-built x64 injector
+├── pop_v1.cpp                  injector v1 — simplest: auto-finds target,
+├── pop_v1.exe                     injects 45-byte shellcode, spawns notepad.
+│                               no args, no modes, ~90 lines.
+├── pop.cpp                     injector v2 — flexible: target by PID/name,
+├── pop.exe                        --dll / --spawn / --msg / --list modes.
+│                               ~300 lines.
 ├── pop-calc/                   quick visual-proof payloads (pops calc.exe)
 │   ├── pop_calc.cpp
 │   ├── pop_calc.exe            standalone EXE
