@@ -1,6 +1,6 @@
 # process-injection-2
 
-Full DLL-injection toolkit for thick-client testing: the injector, two payload families, and reusable source for building your own.
+Full DLL-injection toolkit for thick-client testing: the injector, a reverse-shell payload DLL, and reusable source for building your own.
 
 **Technique**: DLL injection via `CreateRemoteThread + LoadLibraryA` (MITRE ATT&CK T1055.001). The injector allocates a buffer inside the target process, writes a DLL path into it, then starts a remote thread at `kernel32!LoadLibraryA` with that path as its argument — the target's own loader does the work. Once loaded, the DLL spawns a thread that does whatever you want: pop calc, open a reverse shell, dump creds, etc.
 
@@ -8,10 +8,7 @@ Full DLL-injection toolkit for thick-client testing: the injector, two payload f
 
 ```
 process-injection-2/
-├── pop_v1.cpp                  injector v1 — simplest: auto-finds target,
-├── pop_v1.exe                     injects 45-byte shellcode, spawns notepad.
-│                               no args, no modes, ~90 lines.
-├── pop.cpp                     injector v2 — flexible: target by PID/name,
+├── pop.cpp                     flexible injector — target by PID/name,
 ├── pop.exe                        --dll / --spawn / --msg / --list modes.
 │                               ~300 lines.
 └── reverse-shell/              reverse-shell payload DLL
