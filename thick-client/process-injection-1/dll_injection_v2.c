@@ -4,7 +4,7 @@
  * Difference from dll_injection.c:
  *   v1 loads whatever DLL you point at. v2 ships a thin injector that
  *   expects the DLL to do the rename + FileDescription patch itself.
- *   The reference DLL is `payload/proc-injection-2/revshell_pure_dll.dll`
+ *   The reference DLL is `../process-injection-2/reverse-shell/revshell_pure_dll.dll`
  *   which copies cmd.exe next to the host EXE, patches its FileDescription
  *   to "RevShell - WinCmd Proc", then spawns the renamed copy.
  *
@@ -22,7 +22,7 @@
  *   dll_inject_v2.exe <PID> <absolute DLL path>
  *
  * Example (uses the reference identifier-aware DLL):
- *   dll_inject_v2.exe 1234 C:\PayloadEverything\thick-client\payload\proc-injection-2\revshell_pure_dll.dll
+ *   dll_inject_v2.exe 1234 C:\PayloadEverything\thick-client\process-injection-2\reverse-shell\revshell_pure_dll.dll
  *
  * The child under the host will show:
  *     RevShell - WinCmd Proc   <-- big text (patched by the DLL)
@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
     if (argc < 3) {
         printf("Usage: %s <PID> <absolute DLL path>\n", argv[0]);
         printf("\nFor identifiable child in Task Manager, use the DLL at:\n");
-        printf("  payload/proc-injection-2/revshell_pure_dll.dll\n");
+        printf("  ../process-injection-2/reverse-shell/revshell_pure_dll.dll\n");
         return 1;
     }
     DWORD pid = atoi(argv[1]);
