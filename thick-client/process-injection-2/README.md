@@ -14,13 +14,9 @@ process-injection-2/
 ├── pop.cpp                     injector v2 — flexible: target by PID/name,
 ├── pop.exe                        --dll / --spawn / --msg / --list modes.
 │                               ~300 lines.
-└── reverse-shell/              interactive-shell payloads
-    ├── revshell_pure.cpp
-    ├── revshell_pure.exe       standalone EXE
+└── reverse-shell/              reverse-shell payload DLL
     ├── revshell_pure_dll.cpp   DLL — copies cmd.exe next to the host EXE,
     ├── revshell_pure_dll.dll   patches FileDescription, spawns renamed copy
-    ├── revshell_sc.cpp         msfvenom-shellcode wrapper variants
-    ├── revshell_sc_dll.cpp
     └── build.ps1
 ```
 
