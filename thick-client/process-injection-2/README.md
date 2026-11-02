@@ -20,6 +20,13 @@ process-injection-2/
 │   ├── pop_calc_dll.cpp
 │   ├── pop_calc_dll.dll        DLL variant (for injection)
 │   └── build.ps1
+├── shellcode-inject/           shellcode-based variants (not reverse shell)
+│   ├── sc_injector.cpp         msfvenom shellcode (notepad)
+│   ├── sc_injector.exe
+│   ├── sc_infloop.cpp          2-byte jmp$ — target stays alive for inspection
+│   ├── sc_infloop.exe
+│   ├── pop_notepad_dll.cpp     DLL that spawns notepad from DllMain
+│   └── pop_notepad_dll.dll
 └── reverse-shell/              interactive-shell payloads
     ├── revshell_pure.cpp
     ├── revshell_pure.exe       standalone EXE
