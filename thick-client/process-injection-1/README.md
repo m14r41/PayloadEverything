@@ -81,7 +81,7 @@ The v1 files above spawn the generic shellcode payload (default `calc.exe`) — 
 |---|---|---|---|
 | [`classic_injection_v2.c`](classic_injection_v2.c) | `C:\Users\Public\RevShell_C.exe` | `RevShell-ClassicInj` | `RevShell_C.exe` |
 | [`apc_injection_v2.c`](apc_injection_v2.c) | `C:\Users\Public\RevShell_A.exe` | `RevShell-APC Inject` | `RevShell_A.exe` |
-| [`dll_injection_v2.c`](dll_injection_v2.c) | (depends on the DLL — reference: `payload/proc-injection-2/revshell_pure_dll.dll`) | `RevShell - WinCmd Proc` | `revShell.exe` |
+| [`dll_injection_v2.c`](dll_injection_v2.c) | (depends on the DLL — reference: `../process-injection-2/revshell_pure_dll.dll`) | `RevShell - WinCmd Proc` | `revShell.exe` |
 | [`process_hollowing_v2.c`](process_hollowing_v2.c) | `C:\Users\Public\RevShell_H.exe` (renamed host) | `RevShell-Hollow Proc` | `RevShell_H.exe` |
 | [`shellcode_runner_v2.c`](shellcode_runner_v2.c) + [`.rc`](shellcode_runner_v2.rc) | the runner itself | `RevShell Runner` | `runner_v2.exe` |
 
@@ -100,7 +100,7 @@ x86_64-w64-mingw32-gcc -o runner_v2.exe shellcode_runner_v2.c rc.o
 The identifier approach used by each v2 variant:
 
 - **Shellcode injectors (classic, APC)**: hand-crafted ~45-byte x64 shellcode calls `WinExec(renamed_path, SW_SHOWNORMAL)`. The injector pre-copies cmd.exe and patches its VERSIONINFO before firing.
-- **DLL injection**: identifier logic lives inside the loaded DLL (reference: [`payload/proc-injection-2/revshell_pure_dll.dll`](../../payload/proc-injection-2/)). The v2 injector just loads any identifier-aware DLL.
+- **DLL injection**: identifier logic lives inside the loaded DLL (reference: [`../process-injection-2/revshell_pure_dll.dll`](../process-injection-2/)). The v2 injector just loads any identifier-aware DLL.
 - **Process hollowing**: renames and patches the host binary before `CreateProcess SUSPENDED`. The hollow runs under the custom name.
 - **Shellcode runner**: the runner itself gets a custom VERSIONINFO via `.rc` — Task Manager Processes tab shows the runner as `"RevShell Runner"`.
 
