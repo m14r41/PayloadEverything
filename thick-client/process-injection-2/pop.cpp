@@ -440,7 +440,7 @@ static unsigned char* build_msgbox_shellcode(const char* text, size_t* outLen) {
     FARPROC messagebox_fn = GetProcAddress(user32, "MessageBoxA");
     if (!messagebox_fn) return nullptr;
 
-    static const char* caption = "Process Injection Demo";
+    static const char* caption = "Process Injection Successful!";
     size_t text_len = strlen(text) + 1;
     size_t cap_len  = strlen(caption) + 1;
     size_t code_len = 43;
@@ -733,10 +733,10 @@ int main(int argc, char** argv) {
     if (msg_mode) {
         if (!custom_msg) {
             snprintf(default_msg, sizeof(default_msg),
-                     "Process injection in %s (PID %lu) successful!\r\n\r\n"
-                     "This MessageBox is running INSIDE the host process.\r\n"
-                     "Shellcode injected via CreateRemoteThread.\r\n\r\n"
-                     "- pop.exe demo",
+                     "[T1055] Process injection into %s (PID %lu) - successful.\r\n\r\n"
+                     "This dialog is running inside the host process, not the injector.\r\n"
+                     "Shellcode was written to the target with WriteProcessMemory and\r\n"
+                     "executed via CreateRemoteThread.",
                      host_name, target_pid);
             custom_msg = default_msg;
         }
