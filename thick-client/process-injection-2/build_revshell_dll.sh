@@ -31,9 +31,15 @@ SRC_URL="https://raw.githubusercontent.com/m14r41/PayloadEverything/main/thick-c
 DEF_LHOST="10.10.14.1"
 DEF_LPORT="4444"
 
-# load previous answers if the conf exists
+# load previous answers if the conf exists — BUT reject nonsense values
+# (if LHOST got saved as "1" or anything not dotted-quad we silently drop it,
+# so a bad conf doesn't quietly produce a broken DLL on the next run).
 LHOST=""; LPORT=""
 [[ -f "$CONF" ]] && source "$CONF"
+_is_dotted_quad() { [[ "$1" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; }
+_is_port()        { [[ "$1" =~ ^[0-9]+$ ]] && (( $1 >= 1 && $1 <= 65535 )); }
+if ! _is_dotted_quad "$LHOST"; then LHOST=""; fi
+if ! _is_port       "$LPORT"; then LPORT=""; fi
 LAST_LHOST="${LHOST:-$DEF_LHOST}"
 LPORT="${LPORT:-$DEF_LPORT}"
 
@@ -221,6 +227,46 @@ prompt() {
     echo "${v:-$2}"
 }
 
+# Validate IPv4 dotted-quad, each octet 0..255
+is_valid_ipv4() {
+    local ip="$1"
+    [[ "$ip" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] || return 1
+    local IFS='.' o
+    read -ra o <<< "$ip"
+    for n in "${o[@]}"; do (( n <= 255 )) || return 1; done
+    return 0
+}
+
+# Validate TCP port 1..65535
+is_valid_port() {
+    local p="$1"
+    [[ "$p" =~ ^[0-9]+$ ]] || return 1
+    (( p >= 1 && p <= 65535 ))
+}
+
+prompt_ip() {
+    # $1 = label, $2 = default. Loops until a valid IPv4 is given.
+    local v
+    while true; do
+        v="$(prompt "$1" "$2")"
+        if is_valid_ipv4 "$v"; then
+            echo "$v"; return 0
+        fi
+        echo -e "${R}[!]${N} '${v}' is not a valid IPv4 address (expected like ${C}192.168.1.5${N})" >&2
+    done
+}
+
+prompt_port() {
+    local v
+    while true; do
+        v="$(prompt "$1" "$2")"
+        if is_valid_port "$v"; then
+            echo "$v"; return 0
+        fi
+        echo -e "${R}[!]${N} '${v}' is not a valid TCP port (1..65535)" >&2
+    done
+}
+
 check_prereq_mingw()      { ensure_mingw;      }
 check_prereq_llvm_mingw() { ensure_llvm_mingw; }
 
@@ -290,8 +336,8 @@ main() {
         echo -e "${Y}[*]${N} last used           : ${C}$LAST_LHOST${N}  (type it to reuse)"
     fi
 
-    LHOST="$(prompt "LHOST (attacker IP)" "$LHOST_DEFAULT")"
-    LPORT="$(prompt "LPORT (listener port)" "$LPORT")"
+    LHOST="$(prompt_ip   "LHOST (attacker IP)"   "$LHOST_DEFAULT")"
+    LPORT="$(prompt_port "LPORT (listener port)" "$LPORT")"
 
     echo
     echo "Pick architecture:"
