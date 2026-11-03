@@ -1,4 +1,4 @@
-// revshell_pure_dll.cpp — pure WinSock reverse shell DLL (no shellcode)
+// revshell_pure_dll.cpp - pure WinSock reverse shell DLL (no shellcode)
 //
 // When loaded into a target process (via LoadLibrary, CreateRemoteThread,
 // APC, or reflective loader), spawns a reverse shell to LHOST:LPORT.

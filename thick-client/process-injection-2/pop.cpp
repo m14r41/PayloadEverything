@@ -1,4 +1,4 @@
-// pop.cpp — flexible shellcode injector (works on ANY x64 process you can open)
+// pop.cpp - flexible shellcode injector (works on ANY x64 process you can open)
 //
 // Modes:
 //   --list                                  Show every running process you can
@@ -224,7 +224,7 @@ static const char* err_name(DWORD e) {
         case 6:   return "ERROR_INVALID_HANDLE";
         case 8:   return "ERROR_NOT_ENOUGH_MEMORY";
         case 126: return "ERROR_MOD_NOT_FOUND (DLL or a dependency could not be loaded)";
-        case 193: return "ERROR_BAD_EXE_FORMAT (arch mismatch — x86 DLL into x64 target or vice versa)";
+        case 193: return "ERROR_BAD_EXE_FORMAT (arch mismatch - x86 DLL into x64 target or vice versa)";
         case 998: return "ERROR_NOACCESS (bad memory address in target)";
         case 1114:return "ERROR_DLL_INIT_FAILED (DLL loaded but DllMain returned FALSE)";
         default:  return "(no symbolic name mapped)";

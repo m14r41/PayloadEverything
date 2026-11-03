@@ -1,4 +1,4 @@
-# payloads/reverse-shell/build.ps1 — builds all 4 reverse-shell variants
+# payloads/reverse-shell/build.ps1 - builds all 4 reverse-shell variants
 # Auto-detects MSVC first, falls back to MinGW-w64.
 #
 # Usage:
