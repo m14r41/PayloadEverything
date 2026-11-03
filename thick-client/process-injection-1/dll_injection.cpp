@@ -1,7 +1,7 @@
 /*
- * DLL Injection — CreateRemoteThread + LoadLibraryA
+ * DLL Injection - CreateRemoteThread + LoadLibraryA
  *
- * MITRE ATT&CK: T1055.001 — Dynamic-link Library Injection
+ * MITRE ATT&CK: T1055.001 - Dynamic-link Library Injection
  *
  * Chain:
  *   OpenProcess -> VirtualAllocEx(RW) -> WriteProcessMemory("C:\\...\\x.dll")
@@ -10,8 +10,8 @@
  * The target's own kernel32 does the load when the thread fires.
  *
  * Compile:
- *   x86_64-w64-mingw32-gcc -o dll_inject.exe dll_injection.c
- *   cl dll_injection.c /Fe:dll_inject.exe
+ *   x86_64-w64-mingw32-g++ -std=c++20 -o dll_inject.exe dll_injection.cpp
+ *   cl /std:c++20 dll_injection.cpp /Fe:dll_inject.exe
  *
  * Usage:
  *   dll_inject.exe <PID> <full_path_to_dll>

@@ -1,7 +1,7 @@
 /*
- * Classic Shellcode Injection v2 — identifiable child in Task Manager
+ * Classic Shellcode Injection v2 - identifiable child in Task Manager
  *
- * Difference from classic_injection.c:
+ * Difference from classic_injection.cpp:
  *   v1 spawns plain "calc.exe" via msfvenom - looks identical to any
  *   user-launched calc. v2 pre-renames cmd.exe to a predictable path,
  *   patches its FileDescription, then injects HAND-CRAFTED shellcode
@@ -13,8 +13,8 @@
  * MITRE ATT&CK: T1055.002
  *
  * Compile:
- *   x86_64-w64-mingw32-gcc -o inject_v2.exe classic_injection_v2.c
- *   cl classic_injection_v2.c /Fe:inject_v2.exe
+ *   x86_64-w64-mingw32-g++ -std=c++20 -o inject_v2.exe classic_injection_v2.cpp
+ *   cl /std:c++20 classic_injection_v2.cpp /Fe:inject_v2.exe
  *
  * Usage:
  *   inject_v2.exe <PID|name>

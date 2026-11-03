@@ -1,16 +1,16 @@
 /*
- * Classic Shellcode Injection — CreateRemoteThread + VirtualAllocEx
+ * Classic Shellcode Injection - CreateRemoteThread + VirtualAllocEx
  *
- * MITRE ATT&CK: T1055.002 — Portable Executable Injection
- *               (base: T1055 — Process Injection)
+ * MITRE ATT&CK: T1055.002 - Portable Executable Injection
+ *               (base: T1055 - Process Injection)
  *
  * Chain:
  *   OpenProcess -> VirtualAllocEx(RWX) -> WriteProcessMemory ->
  *   CreateRemoteThread(entry = shellcode address) -> shellcode runs
  *
  * Compile:
- *   x86_64-w64-mingw32-gcc -o inject.exe classic_injection.c
- *   cl classic_injection.c /Fe:inject.exe
+ *   x86_64-w64-mingw32-g++ -std=c++20 -o inject.exe classic_injection.cpp
+ *   cl /std:c++20 classic_injection.cpp /Fe:inject.exe
  *
  * Usage:
  *   inject.exe <PID>

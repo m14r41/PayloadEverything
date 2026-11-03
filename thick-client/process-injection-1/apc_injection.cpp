@@ -1,7 +1,7 @@
 /*
- * APC Injection — QueueUserAPC
+ * APC Injection - QueueUserAPC
  *
- * MITRE ATT&CK: T1055.004 — Asynchronous Procedure Call
+ * MITRE ATT&CK: T1055.004 - Asynchronous Procedure Call
  *
  * Fires when any thread of the target enters an alertable wait
  * (SleepEx/WaitFor*Ex with bAlertable=TRUE, MsgWaitForMultipleObjectsEx,
@@ -9,8 +9,8 @@
  * the target; the first one that enters an alertable state runs it.
  *
  * Compile:
- *   x86_64-w64-mingw32-gcc -o apc_inject.exe apc_injection.c
- *   cl apc_injection.c /Fe:apc_inject.exe
+ *   x86_64-w64-mingw32-g++ -std=c++20 -o apc_inject.exe apc_injection.cpp
+ *   cl /std:c++20 apc_injection.cpp /Fe:apc_inject.exe
  *
  * Usage:
  *   apc_inject.exe <PID>

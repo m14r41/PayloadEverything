@@ -1,7 +1,7 @@
 /*
- * DLL Injection v2 — identifiable child in Task Manager
+ * DLL Injection v2 - identifiable child in Task Manager
  *
- * Difference from dll_injection.c:
+ * Difference from dll_injection.cpp:
  *   v1 loads whatever DLL you point at. v2 ships a thin injector that
  *   expects the DLL to do the rename + FileDescription patch itself.
  *   The reference DLL is `../process-injection-2/reverse-shell/revshell_pure_dll.dll`
@@ -15,8 +15,8 @@
  * MITRE ATT&CK: T1055.001
  *
  * Compile:
- *   x86_64-w64-mingw32-gcc -o dll_inject_v2.exe dll_injection_v2.c -lpsapi
- *   cl dll_injection_v2.c /Fe:dll_inject_v2.exe psapi.lib
+ *   x86_64-w64-mingw32-g++ -std=c++20 -o dll_inject_v2.exe dll_injection_v2.cpp -lpsapi
+ *   cl /std:c++20 dll_injection_v2.cpp /Fe:dll_inject_v2.exe psapi.lib
  *
  * Usage:
  *   dll_inject_v2.exe <PID> <absolute DLL path>

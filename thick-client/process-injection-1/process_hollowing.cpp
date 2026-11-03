@@ -1,7 +1,7 @@
 /*
  * Process Hollowing (RunPE)
  *
- * MITRE ATT&CK: T1055.012 — Process Hollowing
+ * MITRE ATT&CK: T1055.012 - Process Hollowing
  *
  * Chain:
  *   CreateProcessA(host, CREATE_SUSPENDED)
@@ -17,8 +17,8 @@
  *   -> ResumeThread
  *
  * Compile:
- *   x86_64-w64-mingw32-gcc -o hollow.exe process_hollowing.c
- *   cl process_hollowing.c /Fe:hollow.exe
+ *   x86_64-w64-mingw32-g++ -std=c++20 -o hollow.exe process_hollowing.cpp
+ *   cl /std:c++20 process_hollowing.cpp /Fe:hollow.exe
  *
  * Usage:
  *   hollow.exe <payload.exe> [host_process]

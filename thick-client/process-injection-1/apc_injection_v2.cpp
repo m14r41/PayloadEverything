@@ -1,7 +1,7 @@
 /*
- * APC Injection v2 — identifiable child in Task Manager
+ * APC Injection v2 - identifiable child in Task Manager
  *
- * Same spawn-renamed-cmd approach as classic_injection_v2.c, but delivered
+ * Same spawn-renamed-cmd approach as classic_injection_v2.cpp, but delivered
  * via QueueUserAPC on every thread of the target. First thread to enter
  * alertable state fires the WinExec call.
  *
@@ -12,8 +12,8 @@
  * MITRE ATT&CK: T1055.004
  *
  * Compile:
- *   x86_64-w64-mingw32-gcc -o apc_inject_v2.exe apc_injection_v2.c
- *   cl apc_injection_v2.c /Fe:apc_inject_v2.exe
+ *   x86_64-w64-mingw32-g++ -std=c++20 -o apc_inject_v2.exe apc_injection_v2.cpp
+ *   cl /std:c++20 apc_injection_v2.cpp /Fe:apc_inject_v2.exe
  *
  * Usage:
  *   apc_inject_v2.exe <PID>

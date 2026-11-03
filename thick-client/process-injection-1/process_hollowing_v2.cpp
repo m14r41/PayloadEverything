@@ -1,7 +1,7 @@
 /*
- * Process Hollowing v2 — identifiable hollow in Task Manager
+ * Process Hollowing v2 - identifiable hollow in Task Manager
  *
- * Difference from process_hollowing.c:
+ * Difference from process_hollowing.cpp:
  *   v1 hollows svchost.exe (or whatever host you specify) with your
  *   payload. The row in Task Manager still shows "svchost.exe" with
  *   svchost's embedded FileDescription "Host Process for Windows
@@ -15,15 +15,15 @@
  * MITRE ATT&CK: T1055.012
  *
  * Compile:
- *   x86_64-w64-mingw32-gcc -o hollow_v2.exe process_hollowing_v2.c
- *   cl process_hollowing_v2.c /Fe:hollow_v2.exe
+ *   x86_64-w64-mingw32-g++ -std=c++20 -o hollow_v2.exe process_hollowing_v2.cpp
+ *   cl /std:c++20 process_hollowing_v2.cpp /Fe:hollow_v2.exe
  *
  * Usage:
  *   hollow_v2.exe <payload.exe> [host.exe]
  *
  * Payload must be an x64 PE with imports already resolved OR position
  * independent. For complex payloads, use the full relocations + imports
- * handling in process_hollowing.c as a starting point.
+ * handling in process_hollowing.cpp as a starting point.
  */
 
 #include <windows.h>

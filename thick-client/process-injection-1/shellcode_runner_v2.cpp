@@ -1,7 +1,7 @@
 /*
- * Shellcode Runner v2 — self-identifying runner
+ * Shellcode Runner v2 - self-identifying runner
  *
- * Difference from shellcode_runner.c:
+ * Difference from shellcode_runner.cpp:
  *   v1 compiles as generic "runner.exe" with no version info - looks
  *   like any random exe in Task Manager. v2 embeds a .rc file with
  *   custom VERSIONINFO so the runner itself shows up as:
@@ -19,11 +19,11 @@
  *
  * Compile (Linux cross):
  *   x86_64-w64-mingw32-windres shellcode_runner_v2.rc -o rc.o
- *   x86_64-w64-mingw32-gcc -o runner_v2.exe shellcode_runner_v2.c rc.o
+ *   x86_64-w64-mingw32-g++ -std=c++20 -o runner_v2.exe shellcode_runner_v2.cpp rc.o
  *
  * Compile (Windows MSVC):
  *   rc shellcode_runner_v2.rc
- *   cl shellcode_runner_v2.c shellcode_runner_v2.res /Fe:runner_v2.exe
+ *   cl /std:c++20 shellcode_runner_v2.cpp shellcode_runner_v2.res /Fe:runner_v2.exe
  *
  * Usage:
  *   runner_v2.exe                       (embedded calc shellcode)
@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
     DWORD scLen = sizeof(default_shellcode) - 1;
     int use_thread = 0;
 
-    printf("[*] RevShell Runner v2 — self-identifying harness\n");
+    printf("[*] RevShell Runner v2 - self-identifying harness\n");
 
     if (argc >= 2) {
         for (int i = 1; i < argc; ++i) {
