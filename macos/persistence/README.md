@@ -8,10 +8,10 @@ Maintain access across reboots and logins on macOS targets.
 
 | File | Description |
 |------|-------------|
-| [`launch_agent_persist.sh`](launch_agent_persist.sh) | LaunchAgent/LaunchDaemon persistence — 5 trigger types (RunAtLoad, StartInterval, WatchPaths, Calendar, KeepAlive), stealthy label names, install/remove/list |
-| [`login_items.md`](login_items.md) | Login Items persistence — AppleScript, SMLoginItemSetEnabled, Login Hook, Folder Actions, shell profiles, calendar alarms |
-| [`cron_persistence.sh`](cron_persistence.sh) | Cron/periodic/at persistence — user crontab, /etc/periodic scripts, at jobs, enumeration, cleanup |
-| [`authorization_plugin.md`](authorization_plugin.md) | Authorization plugin persistence — Objective-C plugin template, runs as root at login before desktop loads, high stealth |
+| [`launch_agent_persist.sh`](launch_agent_persist.sh) | LaunchAgent/LaunchDaemon persistence - 5 trigger types (RunAtLoad, StartInterval, WatchPaths, Calendar, KeepAlive), stealthy label names, install/remove/list |
+| [`login_items.md`](login_items.md) | Login Items persistence - AppleScript, SMLoginItemSetEnabled, Login Hook, Folder Actions, shell profiles, calendar alarms |
+| [`cron_persistence.sh`](cron_persistence.sh) | Cron/periodic/at persistence - user crontab, /etc/periodic scripts, at jobs, enumeration, cleanup |
+| [`authorization_plugin.md`](authorization_plugin.md) | Authorization plugin persistence - Objective-C plugin template, runs as root at login before desktop loads, high stealth |
 
 ## Quick Start
 

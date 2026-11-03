@@ -1,6 +1,6 @@
 # Broken Authentication Payloads
 
-> **OWASP API**: API2 — Broken Authentication
+> **OWASP API**: API2 - Broken Authentication
 
 ## Files
 

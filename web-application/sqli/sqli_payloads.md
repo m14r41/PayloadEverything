@@ -1,5 +1,5 @@
 ## ============================================================
-## SQL Injection Payloads — Real-World VAPT Collection
+## SQL Injection Payloads - Real-World VAPT Collection
 ## ============================================================
 
 ## ---- DETECTION / IDENTIFICATION ----

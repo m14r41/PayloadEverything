@@ -2,7 +2,7 @@
 
 Comprehensive payload and tool collection for Windows and Active Directory penetration testing.
 
-> **Framework**: MITRE ATT&CK for Enterprise — Windows Platform
+> **Framework**: MITRE ATT&CK for Enterprise - Windows Platform
 
 ## Directory Structure
 

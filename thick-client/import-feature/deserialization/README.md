@@ -10,7 +10,7 @@ Exploit insecure deserialization in .NET desktop applications.
 | File | Description |
 |------|-------------|
 | [`dotnet_deser.py`](dotnet_deser.py) | Generates ysoserial.net commands for all formatter/gadget combos, Json.Net payload, and detection tips |
-| [`java_deser.py`](java_deser.py) | Java deserialization — 16 ysoserial gadget chains (CommonsCollections, Spring, Groovy, Hibernate, etc.), stream detection, library fingerprinting |
+| [`java_deser.py`](java_deser.py) | Java deserialization - 16 ysoserial gadget chains (CommonsCollections, Spring, Groovy, Hibernate, etc.), stream detection, library fingerprinting |
 
 ## Usage
 
@@ -19,9 +19,9 @@ python -I dotnet_deser.py --cmd calc.exe --formatter all --output payloads/
 ```
 
 Outputs:
-- `ysoserial_commands.txt` — Ready-to-run ysoserial.net commands
-- `jsonnet_payload.json` — Json.Net `$type` payload (for `TypeNameHandling != None`)
-- `detection_tips.txt` — How to find deserialization sinks in decompiled code
+- `ysoserial_commands.txt` - Ready-to-run ysoserial.net commands
+- `jsonnet_payload.json` - Json.Net `$type` payload (for `TypeNameHandling != None`)
+- `detection_tips.txt` - How to find deserialization sinks in decompiled code
 
 ## How to Identify
 

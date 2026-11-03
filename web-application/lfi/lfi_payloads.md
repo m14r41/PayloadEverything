@@ -1,5 +1,5 @@
 ## ============================================================
-## LFI / Path Traversal Payloads — Local File Inclusion
+## LFI / Path Traversal Payloads - Local File Inclusion
 ## ============================================================
 
 ## ---- BASIC TRAVERSAL (Linux) ----

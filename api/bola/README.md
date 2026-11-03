@@ -1,6 +1,6 @@
 # BOLA / IDOR Payloads
 
-> **OWASP API**: API1 — Broken Object Level Authorization
+> **OWASP API**: API1 - Broken Object Level Authorization
 
 ## Files
 

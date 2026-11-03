@@ -1,6 +1,6 @@
-# MitM / SSL Interception — Thick Client Network Testing
+# MitM / SSL Interception - Thick Client Network Testing
 
-> OWASP Thick Client: TC7 — Insecure Communication
+> OWASP Thick Client: TC7 - Insecure Communication
 > Severity: CRITICAL (plaintext), HIGH (weak TLS, no cert validation)
 
 ## 1. Traffic Interception Setup
@@ -58,7 +58,7 @@ netsh winhttp reset proxy
 
 ### TCP Proxy (for custom protocols)
 ```python
-# Simple TCP MitM proxy — relay and log traffic
+# Simple TCP MitM proxy - relay and log traffic
 # python -I tcp_proxy.py --listen-port 4444 --target-host real.server.com --target-port 1433
 
 import socket, threading, sys

@@ -6,8 +6,8 @@ Automated tools for finding credentials, tokens, and secrets on Linux hosts.
 
 | File | Description |
 |------|-------------|
-| [`credential_hunt.sh`](credential_hunt.sh) | Automated credential search — shadow file, SSH keys, history, MySQL/PostgreSQL/Redis/MongoDB configs, .env files, git creds, AWS/GCP/Azure CLI, Docker, KeePass, process environments |
-| [`memory_creds.sh`](memory_creds.sh) | Memory credential extraction — /proc/PID/mem strings, gdb dumps, swap analysis, core dumps, process environment scanning |
+| [`credential_hunt.sh`](credential_hunt.sh) | Automated credential search - shadow file, SSH keys, history, MySQL/PostgreSQL/Redis/MongoDB configs, .env files, git creds, AWS/GCP/Azure CLI, Docker, KeePass, process environments |
+| [`memory_creds.sh`](memory_creds.sh) | Memory credential extraction - /proc/PID/mem strings, gdb dumps, swap analysis, core dumps, process environment scanning |
 
 ## Quick Start
 

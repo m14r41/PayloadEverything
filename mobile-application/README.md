@@ -42,11 +42,11 @@ Frida scripts, bypass tools, and testing checklists for Android and iOS VAPT eng
 ## Quick Start
 
 ```bash
-# Android — SSL bypass + root bypass + intercept traffic
+# Android - SSL bypass + root bypass + intercept traffic
 frida -U -l android/ssl-pinning-bypass/universal_ssl_bypass.js -f com.target.app --no-pause
 frida -U -l android/root-detection-bypass/root_bypass.js -f com.target.app --no-pause
 
-# iOS — SSL bypass + jailbreak bypass
+# iOS - SSL bypass + jailbreak bypass
 frida -U -l ios/ssl-pinning-bypass/ios_ssl_bypass.js -f com.target.app --no-pause
 frida -U -l ios/jailbreak-detection-bypass/jailbreak_bypass.js -f com.target.app --no-pause
 

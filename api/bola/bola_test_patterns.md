@@ -1,5 +1,5 @@
-# BOLA / IDOR Test Patterns — Real-World API Testing
-# OWASP API Security: API1 — Broken Object Level Authorization
+# BOLA / IDOR Test Patterns - Real-World API Testing
+# OWASP API Security: API1 - Broken Object Level Authorization
 # Severity: HIGH to CRITICAL
 
 # ============================================================
@@ -22,7 +22,7 @@ curl -H "Authorization: Bearer <YOUR_TOKEN>" https://api.target.com/api/v1/users
 # 2. UUID ENUMERATION
 # ============================================================
 
-# If UUIDs are sequential (v1) — extract timestamp and MAC, predict next
+# If UUIDs are sequential (v1) - extract timestamp and MAC, predict next
 # v1 UUID format: timeLow-timeMid-timeHighAndVersion-clockSeq-node
 # Example: 6ba7b810-9dad-11d1-80b4-00c04fd430c8
 

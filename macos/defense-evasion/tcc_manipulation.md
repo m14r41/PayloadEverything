@@ -2,7 +2,7 @@
 
 Manipulate TCC grants to gain access to protected resources or evade security controls.
 
-**MITRE ATT&CK**: T1562.001 — Disable or Modify Tools
+**MITRE ATT&CK**: T1562.001 - Disable or Modify Tools
 
 ---
 

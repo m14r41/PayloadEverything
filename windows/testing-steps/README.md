@@ -6,7 +6,7 @@ Complete security assessment methodology for Windows and Active Directory enviro
 
 | File | Description |
 |------|-------------|
-| [`windows_checklist.md`](windows_checklist.md) | Full Windows/AD security assessment checklist — 8 phases from enumeration through cleanup, with tool references and MITRE ATT&CK mapping |
+| [`windows_checklist.md`](windows_checklist.md) | Full Windows/AD security assessment checklist - 8 phases from enumeration through cleanup, with tool references and MITRE ATT&CK mapping |
 
 ## Assessment Flow
 

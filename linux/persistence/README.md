@@ -6,11 +6,11 @@ Techniques to maintain access after initial compromise.
 
 | File | Description |
 |------|-------------|
-| [`cron_persistence.sh`](cron_persistence.sh) | Cron-based persistence — user crontab, system crontab, /etc/cron.d/, anacron, at jobs. Plant, detect, and clean modes |
-| [`systemd_persistence.sh`](systemd_persistence.sh) | Systemd persistence — user services, system services, timers, socket activation. Includes reverse shell templates |
-| [`ssh_persistence.sh`](ssh_persistence.sh) | SSH persistence — authorized_keys, config backdoor, SSHD wrapper, MOTD backdoor, PAM module, alternate port |
-| [`ld_preload_backdoor.c`](ld_preload_backdoor.c) | LD_PRELOAD shared library — hooks readdir/stat/access to hide files/processes, magic GID root shell trigger |
-| [`bashrc_persistence.sh`](bashrc_persistence.sh) | Shell profile persistence — .bashrc, .profile, /etc/profile.d/, PROMPT_COMMAND, bash completion, alias hijacking |
+| [`cron_persistence.sh`](cron_persistence.sh) | Cron-based persistence - user crontab, system crontab, /etc/cron.d/, anacron, at jobs. Plant, detect, and clean modes |
+| [`systemd_persistence.sh`](systemd_persistence.sh) | Systemd persistence - user services, system services, timers, socket activation. Includes reverse shell templates |
+| [`ssh_persistence.sh`](ssh_persistence.sh) | SSH persistence - authorized_keys, config backdoor, SSHD wrapper, MOTD backdoor, PAM module, alternate port |
+| [`ld_preload_backdoor.c`](ld_preload_backdoor.c) | LD_PRELOAD shared library - hooks readdir/stat/access to hide files/processes, magic GID root shell trigger |
+| [`bashrc_persistence.sh`](bashrc_persistence.sh) | Shell profile persistence - .bashrc, .profile, /etc/profile.d/, PROMPT_COMMAND, bash completion, alias hijacking |
 
 ## MITRE ATT&CK References
 

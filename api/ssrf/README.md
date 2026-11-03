@@ -1,6 +1,6 @@
 # API SSRF Payloads
 
-> **OWASP API**: API7 — Server Side Request Forgery
+> **OWASP API**: API7 - Server Side Request Forgery
 
 ## Files
 

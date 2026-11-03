@@ -1,5 +1,5 @@
-# Authentication Bypass Headers — Burp Intruder / ffuf
-# OWASP API Security: API2 — Broken Authentication
+# Authentication Bypass Headers - Burp Intruder / ffuf
+# OWASP API Security: API2 - Broken Authentication
 # Use: Add these headers to requests that return 401/403
 
 # ============================================================

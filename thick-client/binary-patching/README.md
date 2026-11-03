@@ -1,4 +1,4 @@
-# Binary Patching — Authentication & Authorization Bypass
+# Binary Patching - Authentication & Authorization Bypass
 
 Reverse engineer and patch desktop application binaries to bypass authentication, authorization, and licensing.
 
@@ -9,8 +9,8 @@ Reverse engineer and patch desktop application binaries to bypass authentication
 
 | File | Description |
 |------|-------------|
-| [`binary_analysis.md`](binary_analysis.md) | Complete guide — .NET (dnSpy), native (x64dbg/Ghidra), Java (jd-gui), Electron (asar extract). Includes patching techniques, common patterns, test cases, and reporting template. |
-| [`dotnet_patch_scripts.py`](dotnet_patch_scripts.py) | Automated .NET IL patching — 7 patterns (auth bypass, license bypass, role bypass, debug enable, SSL bypass, integrity removal, logging disable) with dnSpy steps and CIL bytes |
+| [`binary_analysis.md`](binary_analysis.md) | Complete guide - .NET (dnSpy), native (x64dbg/Ghidra), Java (jd-gui), Electron (asar extract). Includes patching techniques, common patterns, test cases, and reporting template. |
+| [`dotnet_patch_scripts.py`](dotnet_patch_scripts.py) | Automated .NET IL patching - 7 patterns (auth bypass, license bypass, role bypass, debug enable, SSL bypass, integrity removal, logging disable) with dnSpy steps and CIL bytes |
 
 ## Tool Requirements
 
@@ -18,7 +18,7 @@ Reverse engineer and patch desktop application binaries to bypass authentication
 |----------|-----------|----------|---------|
 | .NET | dnSpy, ILSpy | dnSpy | dnSpy (Edit Method Body) |
 | C/C++ | Ghidra, IDA | x64dbg | x64dbg (Patches > Export) |
-| Java | jd-gui, jadx | — | Recompile + repackage JAR |
+| Java | jd-gui, jadx | - | Recompile + repackage JAR |
 | Electron | Built-in (JS) | Chrome DevTools | Edit source + repack asar |
 
 ## Quick Test Workflow

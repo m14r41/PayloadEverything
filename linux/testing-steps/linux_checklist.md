@@ -10,8 +10,8 @@ hostnamectl                        # Full system info
 uptime                             # System uptime
 ```
 
-- [ ] Record kernel version — check for DirtyPipe, DirtyCow, PwnKit, OverlayFS
-- [ ] Record distro version — check for distro-specific CVEs
+- [ ] Record kernel version - check for DirtyPipe, DirtyCow, PwnKit, OverlayFS
+- [ ] Record distro version - check for distro-specific CVEs
 - [ ] Check if SELinux/AppArmor is enforcing: `getenforce`, `aa-status`
 
 ## 2. User Enumeration

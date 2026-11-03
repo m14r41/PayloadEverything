@@ -2,19 +2,19 @@
 
 A comprehensive, organized payload library for Vulnerability Assessment and Penetration Testing (VAPT) across all application types.
 
-> **Authorization Required** — Use these payloads ONLY on systems you have explicit written authorization to test.
+> **Authorization Required** - Use these payloads ONLY on systems you have explicit written authorization to test.
 
 ## Modules
 
 | Module | Status | Description |
 |--------|--------|-------------|
-| [Thick Client](thick-client/) | Active | Desktop/thick client — DLL hijack, process injection, CHM, import exploits, privilege escalation, credential extraction, binary patching, Electron/CEF, COM hijacking, reverse shells, token manipulation |
-| [Web Application](web-application/) | Active | OWASP Top 10 — XSS, SQLi, SSRF, SSTI, LFI, command injection, file upload/webshells, XXE, JWT attacks, CORS PoC, open redirect, deserialization |
-| [Mobile Application](mobile-application/) | Active | Android & iOS — SSL pinning bypass, root/jailbreak bypass, local storage extraction, Frida scripts, intent abuse, biometric bypass, crypto hooks |
-| [API](api/) | Active | REST/GraphQL — BOLA, broken auth, JWT attacks, BFLA, mass assignment, rate limiting, GraphQL injection, NoSQL injection, SSRF, wordlists |
-| [Linux](linux/) | Active | Linux OS — kernel exploits, SUID/sudo/capabilities abuse, container escape, cron/systemd persistence, credential harvesting, log tampering, network tunneling |
-| [macOS](macos/) | Active | macOS — TCC bypass, dylib hijack, sudo exploits, LaunchAgent/Daemon persistence, keychain/browser creds, Gatekeeper/SIP bypass, mDNS/AirDrop attacks |
-| [Windows](windows/) | Active | Windows/AD — UAC bypass, token abuse, service exploits, registry/WMI/scheduled task persistence, Mimikatz/LSASS/SAM, AMSI/AppLocker/ETW bypass, Kerberos attacks, lateral movement |
+| [Thick Client](thick-client/) | Active | Desktop/thick client - DLL hijack, process injection, CHM, import exploits, privilege escalation, credential extraction, binary patching, Electron/CEF, COM hijacking, reverse shells, token manipulation |
+| [Web Application](web-application/) | Active | OWASP Top 10 - XSS, SQLi, SSRF, SSTI, LFI, command injection, file upload/webshells, XXE, JWT attacks, CORS PoC, open redirect, deserialization |
+| [Mobile Application](mobile-application/) | Active | Android & iOS - SSL pinning bypass, root/jailbreak bypass, local storage extraction, Frida scripts, intent abuse, biometric bypass, crypto hooks |
+| [API](api/) | Active | REST/GraphQL - BOLA, broken auth, JWT attacks, BFLA, mass assignment, rate limiting, GraphQL injection, NoSQL injection, SSRF, wordlists |
+| [Linux](linux/) | Active | Linux OS - kernel exploits, SUID/sudo/capabilities abuse, container escape, cron/systemd persistence, credential harvesting, log tampering, network tunneling |
+| [macOS](macos/) | Active | macOS - TCC bypass, dylib hijack, sudo exploits, LaunchAgent/Daemon persistence, keychain/browser creds, Gatekeeper/SIP bypass, mDNS/AirDrop attacks |
+| [Windows](windows/) | Active | Windows/AD - UAC bypass, token abuse, service exploits, registry/WMI/scheduled task persistence, Mimikatz/LSASS/SAM, AMSI/AppLocker/ETW bypass, Kerberos attacks, lateral movement |
 
 ## Project Structure
 
@@ -152,10 +152,10 @@ category/
 +-- helper_script.ps1      # Discovery/enumeration automation
 ```
 
-- **README.md** — Start here. Explains the attack vector, prerequisites, step-by-step testing, and what to document.
-- **Source files** — Compile with the commands in the README.
-- **Generators** — Run with `python -I` for parameterized payload creation.
-- **Discovery scripts** — Run first to find what's exploitable before using payloads.
+- **README.md** - Start here. Explains the attack vector, prerequisites, step-by-step testing, and what to document.
+- **Source files** - Compile with the commands in the README.
+- **Generators** - Run with `python -I` for parameterized payload creation.
+- **Discovery scripts** - Run first to find what's exploitable before using payloads.
 
 ## OWASP References
 

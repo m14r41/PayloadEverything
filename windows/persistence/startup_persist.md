@@ -163,6 +163,6 @@ foreach ($loc in $locations) {
     Get-ItemProperty $loc -ErrorAction SilentlyContinue | Format-List
 }
 
-# Autoruns (Sysinternals) — most comprehensive
+# Autoruns (Sysinternals) - most comprehensive
 autorunsc.exe -accepteula -a * -c -h -s -v -vt | Out-File autoruns.csv
 ```

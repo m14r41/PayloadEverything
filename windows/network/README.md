@@ -6,8 +6,8 @@ Network attacks and traffic interception for Windows and Active Directory enviro
 
 | File | Description |
 |------|-------------|
-| [`network_attacks.md`](network_attacks.md) | Network attacks — LLMNR/NBT-NS/mDNS poisoning (Responder, Inveigh), NTLM relay, SMB relay, Kerberoasting, AS-REP roasting, Pass-the-Hash, Pass-the-Ticket, IPv6 attacks (mitm6), ARP spoofing, ADIDNS poisoning |
-| [`proxy_intercept.md`](proxy_intercept.md) | Traffic interception — system proxy, WinHTTP, CA certificate install, Proxifier, .NET/Java/Electron/Python proxy, Fiddler, certificate pinning bypass |
+| [`network_attacks.md`](network_attacks.md) | Network attacks - LLMNR/NBT-NS/mDNS poisoning (Responder, Inveigh), NTLM relay, SMB relay, Kerberoasting, AS-REP roasting, Pass-the-Hash, Pass-the-Ticket, IPv6 attacks (mitm6), ARP spoofing, ADIDNS poisoning |
+| [`proxy_intercept.md`](proxy_intercept.md) | Traffic interception - system proxy, WinHTTP, CA certificate install, Proxifier, .NET/Java/Electron/Python proxy, Fiddler, certificate pinning bypass |
 
 ## Quick Start
 

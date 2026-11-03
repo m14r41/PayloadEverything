@@ -1,17 +1,17 @@
-# Network MitM — SSL/TLS Interception
+# Network MitM - SSL/TLS Interception
 
 Intercept, inspect, and modify network traffic from desktop applications.
 
-**OWASP**: TC7 — Insecure Communication  
+**OWASP**: TC7 - Insecure Communication  
 **Severity**: CRITICAL (plaintext/no cert validation), HIGH (weak TLS)
 
 ## Files
 
 | File | Description |
 |------|-------------|
-| [`ssl_intercept_setup.md`](ssl_intercept_setup.md) | Complete setup guide — Burp Suite proxy, Proxifier (for apps ignoring system proxy), Wireshark, TCP proxy for custom protocols, certificate pinning bypass (Frida/.NET), hosts file redirect |
-| [`frida_windows_ssl_bypass.js`](frida_windows_ssl_bypass.js) | Frida script — bypass SSL/TLS cert validation in WinHTTP, WinInet, CryptoAPI, OpenSSL, Schannel, Java, .NET thick clients |
-| [`tcp_proxy.py`](tcp_proxy.py) | TCP MitM proxy for non-HTTP protocols — hex dump, TLS stripping, traffic modification, format detection, logging |
+| [`ssl_intercept_setup.md`](ssl_intercept_setup.md) | Complete setup guide - Burp Suite proxy, Proxifier (for apps ignoring system proxy), Wireshark, TCP proxy for custom protocols, certificate pinning bypass (Frida/.NET), hosts file redirect |
+| [`frida_windows_ssl_bypass.js`](frida_windows_ssl_bypass.js) | Frida script - bypass SSL/TLS cert validation in WinHTTP, WinInet, CryptoAPI, OpenSSL, Schannel, Java, .NET thick clients |
+| [`tcp_proxy.py`](tcp_proxy.py) | TCP MitM proxy for non-HTTP protocols - hex dump, TLS stripping, traffic modification, format detection, logging |
 
 ## Quick Start
 

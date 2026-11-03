@@ -1,5 +1,5 @@
 ## ============================================================
-## SSTI Payloads — Server-Side Template Injection
+## SSTI Payloads - Server-Side Template Injection
 ## ============================================================
 
 ## ---- DETECTION POLYGLOTS ----

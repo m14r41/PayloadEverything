@@ -1,6 +1,6 @@
 # Broken Function Level Authorization (BFLA)
 
-> **OWASP API**: API5 — Broken Function Level Authorization
+> **OWASP API**: API5 - Broken Function Level Authorization
 
 ## Files
 

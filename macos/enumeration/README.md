@@ -6,8 +6,8 @@ Comprehensive system and security configuration enumeration for macOS targets.
 
 | File | Description |
 |------|-------------|
-| [`macos_enum.sh`](macos_enum.sh) | Full system enumeration — SIP, Gatekeeper, FileVault, Firewall, users, TCC, LaunchAgents/Daemons, keychains, SSH keys, network, processes, ports, kexts, MDM, cron |
-| [`tcc_enum.sh`](tcc_enum.sh) | TCC database enumeration — Full Disk Access, camera, microphone, screen recording, accessibility, automation grants, bypass opportunity identification |
+| [`macos_enum.sh`](macos_enum.sh) | Full system enumeration - SIP, Gatekeeper, FileVault, Firewall, users, TCC, LaunchAgents/Daemons, keychains, SSH keys, network, processes, ports, kexts, MDM, cron |
+| [`tcc_enum.sh`](tcc_enum.sh) | TCC database enumeration - Full Disk Access, camera, microphone, screen recording, accessibility, automation grants, bypass opportunity identification |
 
 ## Quick Start
 

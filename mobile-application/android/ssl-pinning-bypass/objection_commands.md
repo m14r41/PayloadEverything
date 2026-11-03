@@ -1,4 +1,4 @@
-# Objection Commands — Android VAPT Quick Reference
+# Objection Commands - Android VAPT Quick Reference
 # Start: objection -g com.target.app explore
 # With spawn: objection -g com.target.app explore --startup-command "android sslpinning disable"
 

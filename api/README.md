@@ -8,12 +8,12 @@ Payloads, scripts, and testing methodology for REST, GraphQL, and API security a
 
 | Folder | File | Description |
 |--------|------|-------------|
-| [bola/](bola/) | [bola_test_patterns.md](bola/bola_test_patterns.md) | IDOR patterns — numeric/UUID/encoded IDs, GraphQL nodes, method switch |
-| [broken-auth/](broken-auth/) | [jwt_attacks.py](broken-auth/jwt_attacks.py) | JWT attack tool — none alg, confusion, brute-force, tamper, KID, JKU |
+| [bola/](bola/) | [bola_test_patterns.md](bola/bola_test_patterns.md) | IDOR patterns - numeric/UUID/encoded IDs, GraphQL nodes, method switch |
+| [broken-auth/](broken-auth/) | [jwt_attacks.py](broken-auth/jwt_attacks.py) | JWT attack tool - none alg, confusion, brute-force, tamper, KID, JKU |
 | | [jwt_common_secrets.txt](broken-auth/jwt_common_secrets.txt) | 100+ weak JWT secrets wordlist for brute-force |
 | | [auth_bypass_headers.md](broken-auth/auth_bypass_headers.md) | IP spoofing, role escalation, verb tunneling headers |
 | [bfla/](bfla/) | [bfla_test_patterns.md](bfla/bfla_test_patterns.md) | Admin endpoint discovery, method tampering, role escalation |
-| [mass-assignment/](mass-assignment/) | [mass_assignment_payloads.json](mass-assignment/mass_assignment_payloads.json) | 40+ fields — privilege, billing, status, feature flags |
+| [mass-assignment/](mass-assignment/) | [mass_assignment_payloads.json](mass-assignment/mass_assignment_payloads.json) | 40+ fields - privilege, billing, status, feature flags |
 | [rate-limit/](rate-limit/) | [rate_limit_bypass.md](rate-limit/rate_limit_bypass.md) | IP header rotation, URL tricks, GraphQL batching, param pollution |
 | [graphql/](graphql/) | [introspection_queries.md](graphql/introspection_queries.md) | Full introspection, bypass, batching, nested DoS |
 | | [graphql_injection.md](graphql/graphql_injection.md) | SQLi/NoSQLi/SSRF/XSS/command injection via GraphQL |

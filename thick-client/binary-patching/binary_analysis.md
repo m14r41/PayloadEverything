@@ -1,7 +1,7 @@
-# Binary Patching / Reverse Engineering — Auth & License Bypass
+# Binary Patching / Reverse Engineering - Auth & License Bypass
 
-> OWASP Thick Client: TC3 — Improper Authorization, TC5 — Improper Authentication
-> Severity: CRITICAL — bypassing authentication/authorization client-side
+> OWASP Thick Client: TC3 - Improper Authorization, TC5 - Improper Authentication
+> Severity: CRITICAL - bypassing authentication/authorization client-side
 
 ## Tools Required
 
@@ -88,7 +88,7 @@ dumpbin /headers app.exe | findstr "CLR"
 
 ## 2. Native Applications (C/C++)
 
-### x64dbg — Runtime Patching
+### x64dbg - Runtime Patching
 ```
 1. Attach x64dbg to the running process
 2. Set breakpoints on:
@@ -117,7 +117,7 @@ CMP     [UserRole], 1           ; 1 = admin
 JNE     AccessDenied            ; → patch to NOP (always allow)
 ```
 
-### Ghidra — Static Analysis
+### Ghidra - Static Analysis
 ```
 1. Open Ghidra → New Project → Import binary
 2. Auto-analyze
@@ -151,7 +151,7 @@ jar uf app.jar com/app/PatchedClass.class
 
 ### Electron Applications
 ```bash
-# Electron apps bundle Node.js — the source is in asar archive
+# Electron apps bundle Node.js - the source is in asar archive
 # Extract:
 npx asar extract resources/app.asar ./extracted
 
@@ -218,7 +218,7 @@ Steps to Reproduce:
 3. Edit method body → change to "return true;"
 4. Save patched assembly
 5. Replace original DLL
-6. Launch application — any credentials accepted
+6. Launch application - any credentials accepted
 
 Impact:
 Complete authentication bypass. Attacker gains full access to the

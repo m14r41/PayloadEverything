@@ -2,7 +2,7 @@
 
 Techniques to bypass Gatekeeper and execute unsigned or unnotarized code.
 
-**MITRE ATT&CK**: T1553.001 — Gatekeeper Bypass
+**MITRE ATT&CK**: T1553.001 - Gatekeeper Bypass
 
 ---
 
@@ -155,10 +155,10 @@ sudo spctl --master-enable
 
 Safari auto-opens "safe" files by default. These file types are opened without additional Gatekeeper prompts:
 
-- `.dmg` — Disk images (auto-mount)
-- `.pkg` — Installer packages (opens Installer.app)
-- `.webarchive` — Safari web archives
-- `.webloc` — Web location files
+- `.dmg` - Disk images (auto-mount)
+- `.pkg` - Installer packages (opens Installer.app)
+- `.webarchive` - Safari web archives
+- `.webloc` - Web location files
 
 ```bash
 # Check Safari safe file settings

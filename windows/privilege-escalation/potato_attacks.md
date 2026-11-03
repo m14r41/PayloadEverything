@@ -1,8 +1,8 @@
-# Potato Attacks — Service Account to SYSTEM
+# Potato Attacks - Service Account to SYSTEM
 
 Escalate from a service account (SeImpersonatePrivilege / SeAssignPrimaryTokenPrivilege) to NT AUTHORITY\SYSTEM.
 
-**MITRE ATT&CK**: T1134.001 — Token Impersonation/Theft
+**MITRE ATT&CK**: T1134.001 - Token Impersonation/Theft
 
 ## Prerequisites
 

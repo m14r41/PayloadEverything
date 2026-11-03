@@ -11,8 +11,8 @@ Techniques for manipulating Linux system logs during assessments.
 | `/var/log/auth.log` | Authentication events (Debian/Ubuntu) |
 | `/var/log/secure` | Authentication events (RHEL/CentOS) |
 | `/var/log/syslog` | General system log |
-| `/var/log/wtmp` | Login records (binary — use `last`) |
-| `/var/log/btmp` | Failed logins (binary — use `lastb`) |
+| `/var/log/wtmp` | Login records (binary - use `last`) |
+| `/var/log/btmp` | Failed logins (binary - use `lastb`) |
 | `/var/log/lastlog` | Last login per user |
 | `/var/log/kern.log` | Kernel messages |
 | `/var/log/audit/audit.log` | Auditd events |

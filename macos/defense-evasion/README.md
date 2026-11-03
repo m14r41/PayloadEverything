@@ -8,9 +8,9 @@ Techniques to bypass macOS security controls: Gatekeeper, SIP, TCC, and code sig
 
 | File | Description |
 |------|-------------|
-| [`gatekeeper_bypass.md`](gatekeeper_bypass.md) | Gatekeeper bypass — quarantine removal, download without quarantine (curl/wget/git), CLI execution, ad-hoc signing, DMG mounting, Safari auto-open |
-| [`sip_check.sh`](sip_check.sh) | SIP assessment — status check, protected paths, writable paths, kext policy, NVRAM boot-args, AMFI, debugging restrictions |
-| [`tcc_manipulation.md`](tcc_manipulation.md) | TCC manipulation — fake permission dialogs, direct TCC.db modification, MDM profiles, AppleScript inheritance, synthetic events, reset commands |
+| [`gatekeeper_bypass.md`](gatekeeper_bypass.md) | Gatekeeper bypass - quarantine removal, download without quarantine (curl/wget/git), CLI execution, ad-hoc signing, DMG mounting, Safari auto-open |
+| [`sip_check.sh`](sip_check.sh) | SIP assessment - status check, protected paths, writable paths, kext policy, NVRAM boot-args, AMFI, debugging restrictions |
+| [`tcc_manipulation.md`](tcc_manipulation.md) | TCC manipulation - fake permission dialogs, direct TCC.db modification, MDM profiles, AppleScript inheritance, synthetic events, reset commands |
 
 ## Quick Start
 

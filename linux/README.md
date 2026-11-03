@@ -6,14 +6,14 @@ Payloads, scripts, and references for Linux OS-level vulnerability assessment an
 
 | Folder | Description |
 |--------|-------------|
-| [`enumeration/`](enumeration/) | System enumeration — OS, kernel, users, sudo, SUID, capabilities, cron, writable dirs, processes, network, SSH, containers |
-| [`privilege-escalation/`](privilege-escalation/) | Privilege escalation — SUID/GTFOBins, sudo CVEs, capabilities, cron abuse, kernel exploits, PATH hijacking, writable files |
-| [`persistence/`](persistence/) | Persistence mechanisms — cron, systemd services/timers, SSH backdoors, LD_PRELOAD, shell profile modification |
-| [`credential-harvesting/`](credential-harvesting/) | Credential harvesting — shadow, SSH keys, history, database configs, .env, cloud CLI creds, Docker, memory extraction |
-| [`container-escape/`](container-escape/) | Container escape — Docker socket, privileged mode, capabilities, cgroup escape, Kubernetes pod escape |
-| [`defense-evasion/`](defense-evasion/) | Defense evasion — log tampering, AV/EDR evasion, fileless execution, firewall bypass, DNS/ICMP/HTTP tunneling |
-| [`network/`](network/) | Network attacks — ARP/DNS spoofing, LLMNR/NBT-NS poisoning, SSH MitM, SSL stripping, NFS, Redis, port forwarding, tunneling |
-| [`testing-steps/`](testing-steps/) | Testing checklist — full Linux VAPT assessment workflow |
+| [`enumeration/`](enumeration/) | System enumeration - OS, kernel, users, sudo, SUID, capabilities, cron, writable dirs, processes, network, SSH, containers |
+| [`privilege-escalation/`](privilege-escalation/) | Privilege escalation - SUID/GTFOBins, sudo CVEs, capabilities, cron abuse, kernel exploits, PATH hijacking, writable files |
+| [`persistence/`](persistence/) | Persistence mechanisms - cron, systemd services/timers, SSH backdoors, LD_PRELOAD, shell profile modification |
+| [`credential-harvesting/`](credential-harvesting/) | Credential harvesting - shadow, SSH keys, history, database configs, .env, cloud CLI creds, Docker, memory extraction |
+| [`container-escape/`](container-escape/) | Container escape - Docker socket, privileged mode, capabilities, cgroup escape, Kubernetes pod escape |
+| [`defense-evasion/`](defense-evasion/) | Defense evasion - log tampering, AV/EDR evasion, fileless execution, firewall bypass, DNS/ICMP/HTTP tunneling |
+| [`network/`](network/) | Network attacks - ARP/DNS spoofing, LLMNR/NBT-NS poisoning, SSH MitM, SSL stripping, NFS, Redis, port forwarding, tunneling |
+| [`testing-steps/`](testing-steps/) | Testing checklist - full Linux VAPT assessment workflow |
 
 ## MITRE ATT&CK Mapping
 

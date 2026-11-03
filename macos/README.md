@@ -8,24 +8,24 @@ Payloads, scripts, and testing methodology for macOS security assessments, mappe
 
 | Folder | File | Description |
 |--------|------|-------------|
-| [enumeration/](enumeration/) | [`macos_enum.sh`](enumeration/macos_enum.sh) | Full system enumeration — SIP, Gatekeeper, FileVault, users, TCC, LaunchAgents, keychains, SSH, network, processes, MDM |
-| | [`tcc_enum.sh`](enumeration/tcc_enum.sh) | TCC database enumeration — FDA, camera, mic, screen recording, accessibility grants, bypass opportunities |
-| [privilege-escalation/](privilege-escalation/) | [`tcc_bypass.md`](privilege-escalation/tcc_bypass.md) | TCC bypass — terminal inheritance, Finder automation, direct DB modification, MDM profiles, CVE-based bypasses |
-| | [`dylib_hijack.md`](privilege-escalation/dylib_hijack.md) | dylib hijacking — @rpath, DYLD_INSERT_LIBRARIES, Electron apps, framework hijacking |
-| | [`sudo_exploits.md`](privilege-escalation/sudo_exploits.md) | sudo exploitation — NOPASSWD, timestamp abuse, GTFOBins for macOS, authorization database |
-| | [`installer_abuse.md`](privilege-escalation/installer_abuse.md) | Package installer exploitation — malicious .pkg, productbuild, preinstall/postinstall scripts |
-| [persistence/](persistence/) | [`launch_agent_persist.sh`](persistence/launch_agent_persist.sh) | LaunchAgent/LaunchDaemon persistence — 5 trigger types, stealthy labels, install/remove/list |
-| | [`login_items.md`](persistence/login_items.md) | Login Items — AppleScript, SMLoginItem, Login Hook, Folder Actions, shell profiles |
-| | [`cron_persistence.sh`](persistence/cron_persistence.sh) | Cron/periodic/at persistence — crontab, periodic scripts, at jobs |
-| | [`authorization_plugin.md`](persistence/authorization_plugin.md) | Authorization plugin — runs as root at login, high stealth, Objective-C template |
-| [credential-harvesting/](credential-harvesting/) | [`keychain_dump.sh`](credential-harvesting/keychain_dump.sh) | Keychain extraction — metadata dump, passwords, Wi-Fi, certificates, offline analysis |
-| | [`browser_creds.md`](credential-harvesting/browser_creds.md) | Browser credentials — Safari, Chrome, Firefox, Brave, Edge locations + Chrome decryption script |
-| | [`credential_search.sh`](credential-harvesting/credential_search.sh) | Credential hunting — shell history, SSH keys, cloud creds, .env, git, Docker, npm, databases |
-| [defense-evasion/](defense-evasion/) | [`gatekeeper_bypass.md`](defense-evasion/gatekeeper_bypass.md) | Gatekeeper bypass — quarantine removal, no-quarantine downloads, CLI execution, ad-hoc signing |
-| | [`sip_check.sh`](defense-evasion/sip_check.sh) | SIP assessment — status, protected paths, kext policy, NVRAM, AMFI, debugging restrictions |
-| | [`tcc_manipulation.md`](defense-evasion/tcc_manipulation.md) | TCC manipulation — fake dialogs, direct DB writes, MDM profiles, synthetic events |
-| [network/](network/) | [`network_attacks.md`](network/network_attacks.md) | Network attacks — mDNS/Bonjour, AirDrop, Wi-Fi, Bluetooth, DNS spoofing, LLMNR, Handoff |
-| | [`proxy_intercept.md`](network/proxy_intercept.md) | Traffic interception — Burp/mitmproxy, system proxy, pfctl, Proxifier, cert pinning bypass |
+| [enumeration/](enumeration/) | [`macos_enum.sh`](enumeration/macos_enum.sh) | Full system enumeration - SIP, Gatekeeper, FileVault, users, TCC, LaunchAgents, keychains, SSH, network, processes, MDM |
+| | [`tcc_enum.sh`](enumeration/tcc_enum.sh) | TCC database enumeration - FDA, camera, mic, screen recording, accessibility grants, bypass opportunities |
+| [privilege-escalation/](privilege-escalation/) | [`tcc_bypass.md`](privilege-escalation/tcc_bypass.md) | TCC bypass - terminal inheritance, Finder automation, direct DB modification, MDM profiles, CVE-based bypasses |
+| | [`dylib_hijack.md`](privilege-escalation/dylib_hijack.md) | dylib hijacking - @rpath, DYLD_INSERT_LIBRARIES, Electron apps, framework hijacking |
+| | [`sudo_exploits.md`](privilege-escalation/sudo_exploits.md) | sudo exploitation - NOPASSWD, timestamp abuse, GTFOBins for macOS, authorization database |
+| | [`installer_abuse.md`](privilege-escalation/installer_abuse.md) | Package installer exploitation - malicious .pkg, productbuild, preinstall/postinstall scripts |
+| [persistence/](persistence/) | [`launch_agent_persist.sh`](persistence/launch_agent_persist.sh) | LaunchAgent/LaunchDaemon persistence - 5 trigger types, stealthy labels, install/remove/list |
+| | [`login_items.md`](persistence/login_items.md) | Login Items - AppleScript, SMLoginItem, Login Hook, Folder Actions, shell profiles |
+| | [`cron_persistence.sh`](persistence/cron_persistence.sh) | Cron/periodic/at persistence - crontab, periodic scripts, at jobs |
+| | [`authorization_plugin.md`](persistence/authorization_plugin.md) | Authorization plugin - runs as root at login, high stealth, Objective-C template |
+| [credential-harvesting/](credential-harvesting/) | [`keychain_dump.sh`](credential-harvesting/keychain_dump.sh) | Keychain extraction - metadata dump, passwords, Wi-Fi, certificates, offline analysis |
+| | [`browser_creds.md`](credential-harvesting/browser_creds.md) | Browser credentials - Safari, Chrome, Firefox, Brave, Edge locations + Chrome decryption script |
+| | [`credential_search.sh`](credential-harvesting/credential_search.sh) | Credential hunting - shell history, SSH keys, cloud creds, .env, git, Docker, npm, databases |
+| [defense-evasion/](defense-evasion/) | [`gatekeeper_bypass.md`](defense-evasion/gatekeeper_bypass.md) | Gatekeeper bypass - quarantine removal, no-quarantine downloads, CLI execution, ad-hoc signing |
+| | [`sip_check.sh`](defense-evasion/sip_check.sh) | SIP assessment - status, protected paths, kext policy, NVRAM, AMFI, debugging restrictions |
+| | [`tcc_manipulation.md`](defense-evasion/tcc_manipulation.md) | TCC manipulation - fake dialogs, direct DB writes, MDM profiles, synthetic events |
+| [network/](network/) | [`network_attacks.md`](network/network_attacks.md) | Network attacks - mDNS/Bonjour, AirDrop, Wi-Fi, Bluetooth, DNS spoofing, LLMNR, Handoff |
+| | [`proxy_intercept.md`](network/proxy_intercept.md) | Traffic interception - Burp/mitmproxy, system proxy, pfctl, Proxifier, cert pinning bypass |
 | [testing-steps/](testing-steps/) | [`macos_checklist.md`](testing-steps/macos_checklist.md) | 12-section VAPT checklist with commands for every category |
 
 ## MITRE ATT&CK Mapping

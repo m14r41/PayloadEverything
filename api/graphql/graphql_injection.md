@@ -13,7 +13,7 @@
 {"query": "{ user(name: \"admin'--\") { id email } }"}
 {"query": "{ users(search: \"' OR ''='\") { id email } }"}
 
-# Via variables (preferred — cleaner)
+# Via variables (preferred - cleaner)
 {"query": "query getUser($name: String!) { user(name: $name) { id email } }",
  "variables": {"name": "' OR '1'='1"}}
 

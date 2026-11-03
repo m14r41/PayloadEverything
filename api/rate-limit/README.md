@@ -1,6 +1,6 @@
 # Rate Limit Bypass Payloads
 
-> **OWASP API**: API4 — Unrestricted Resource Consumption
+> **OWASP API**: API4 - Unrestricted Resource Consumption
 
 ## Files
 

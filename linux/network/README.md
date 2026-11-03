@@ -6,8 +6,8 @@ Network attack techniques and tunneling for lateral movement.
 
 | File | Description |
 |------|-------------|
-| [`network_attacks.md`](network_attacks.md) | Network attack reference — ARP spoofing, DNS spoofing, LLMNR/NBT-NS poisoning, SSH MitM, SSL stripping, NFS exploitation, SNMP, Redis, memcached, rsync |
-| [`port_forward.md`](port_forward.md) | Port forwarding and tunneling — SSH (local/remote/dynamic), chisel, socat, netcat relays, iptables, proxychains, ligolo-ng |
+| [`network_attacks.md`](network_attacks.md) | Network attack reference - ARP spoofing, DNS spoofing, LLMNR/NBT-NS poisoning, SSH MitM, SSL stripping, NFS exploitation, SNMP, Redis, memcached, rsync |
+| [`port_forward.md`](port_forward.md) | Port forwarding and tunneling - SSH (local/remote/dynamic), chisel, socat, netcat relays, iptables, proxychains, ligolo-ng |
 
 ## Quick Start
 

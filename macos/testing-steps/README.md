@@ -6,7 +6,7 @@ Comprehensive VAPT methodology and checklist for macOS assessments.
 
 | File | Description |
 |------|-------------|
-| [`macos_checklist.md`](macos_checklist.md) | 12-section checklist — system config (SIP/Gatekeeper/FileVault/Firewall), users, TCC/privacy, privilege escalation, persistence, credentials, network, app security, MDM, defense evasion, logging, evidence collection |
+| [`macos_checklist.md`](macos_checklist.md) | 12-section checklist - system config (SIP/Gatekeeper/FileVault/Firewall), users, TCC/privacy, privilege escalation, persistence, credentials, network, app security, MDM, defense evasion, logging, evidence collection |
 
 ## Checklist Sections
 

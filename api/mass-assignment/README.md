@@ -1,6 +1,6 @@
 # Mass Assignment Payloads
 
-> **OWASP API**: API3/API6 — Broken Object Property Level Authorization
+> **OWASP API**: API3/API6 - Broken Object Property Level Authorization
 
 ## Files
 

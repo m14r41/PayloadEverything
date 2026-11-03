@@ -1,4 +1,4 @@
-# Testing Steps — VAPT Desktop Checklist
+# Testing Steps - VAPT Desktop Checklist
 
 Comprehensive methodology for desktop/thick client application penetration testing.
 
@@ -25,8 +25,8 @@ Comprehensive methodology for desktop/thick client application penetration testi
 | 11 | Electron/CEF Attacks | `electron-cef/` |
 | 12 | COM Hijacking | `com-hijack/` |
 | 13 | CSV/DDE Formula Injection | `import-feature/csv_dde_injection.py` |
-| 14 | Post-Exploitation Checks | — |
-| 15 | Evidence Collection | — |
+| 14 | Post-Exploitation Checks | - |
+| 15 | Evidence Collection | - |
 
 ## How to Use
 

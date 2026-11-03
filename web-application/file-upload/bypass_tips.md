@@ -1,5 +1,5 @@
 ## ============================================================
-## File Upload Bypass Techniques — VAPT Reference
+## File Upload Bypass Techniques - VAPT Reference
 ## ============================================================
 
 ## ---- EXTENSION BYPASS ----

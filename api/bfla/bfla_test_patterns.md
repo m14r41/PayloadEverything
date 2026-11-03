@@ -1,5 +1,5 @@
-# BFLA Test Patterns — Broken Function Level Authorization
-# OWASP API Security: API5 — Broken Function Level Authorization
+# BFLA Test Patterns - Broken Function Level Authorization
+# OWASP API Security: API5 - Broken Function Level Authorization
 # Severity: HIGH to CRITICAL
 
 # ============================================================
@@ -95,7 +95,7 @@ curl -X PUT https://api.target.com/api/v1/users/me \
   -d '{"user_type": "superadmin"}'
 
 # ============================================================
-# 4. PRIVILEGE ESCALATION — ACCOUNT MANAGEMENT
+# 4. PRIVILEGE ESCALATION - ACCOUNT MANAGEMENT
 # ============================================================
 
 # Create admin account (regular user shouldn't be able to)
@@ -174,7 +174,7 @@ curl -X POST https://api.target.com/api/v1/switch-org \
 
 # Step 1: Map all endpoints with admin account (Burp Sitemap)
 # Step 2: Replay every admin request with regular user token
-# Step 3: Check response — any 200 OK with data = BFLA
+# Step 3: Check response - any 200 OK with data = BFLA
 # Step 4: Test with no auth header at all
 # Step 5: Test with expired / invalid token
 # Step 6: Check if admin-only fields appear in regular API responses

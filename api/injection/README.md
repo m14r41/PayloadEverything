@@ -1,6 +1,6 @@
 # API Injection Payloads
 
-> **OWASP API**: API8/API10 — Injection
+> **OWASP API**: API8/API10 - Injection
 
 ## Files
 

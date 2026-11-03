@@ -1,8 +1,8 @@
 # Privilege Escalation
 
-Find local privilege escalation vectors in desktop application installations — services, permissions, scheduled tasks.
+Find local privilege escalation vectors in desktop application installations - services, permissions, scheduled tasks.
 
-**OWASP**: TC3 — Improper Authorization  
+**OWASP**: TC3 - Improper Authorization  
 **Severity**: CRITICAL (user → SYSTEM)
 
 ## Files
@@ -11,9 +11,9 @@ Find local privilege escalation vectors in desktop application installations —
 |------|-------------|
 | [`service_exploits.ps1`](service_exploits.ps1) | Scans for: unquoted service paths, writable service binaries, weak service DACLs, writable service directories, auto-update services, writable scheduled tasks |
 | [`weak_permissions.ps1`](weak_permissions.ps1) | Scans app directory tree for: writable binaries, writable configs, writable plugin dirs, weak AppData permissions |
-| [`named_pipe_impersonation.c`](named_pipe_impersonation.c) | Named pipe token theft — ImpersonateNamedPipeClient + spawn cmd as impersonated user (T1134.001) |
-| [`registry_persistence.ps1`](registry_persistence.ps1) | Registry persistence scanner — checks Run keys, Winlogon, IFEO, AppInit_DLLs, startup folders (T1547.001) |
-| [`token_manipulation.c`](token_manipulation.c) | Token duplication/impersonation/privilege enable — steal SYSTEM tokens from running processes (T1134) |
+| [`named_pipe_impersonation.c`](named_pipe_impersonation.c) | Named pipe token theft - ImpersonateNamedPipeClient + spawn cmd as impersonated user (T1134.001) |
+| [`registry_persistence.ps1`](registry_persistence.ps1) | Registry persistence scanner - checks Run keys, Winlogon, IFEO, AppInit_DLLs, startup folders (T1547.001) |
+| [`token_manipulation.c`](token_manipulation.c) | Token duplication/impersonation/privilege enable - steal SYSTEM tokens from running processes (T1134) |
 
 ## Usage
 

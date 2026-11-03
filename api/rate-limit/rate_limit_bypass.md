@@ -1,5 +1,5 @@
-# Rate Limit Bypass Techniques — API Security Testing
-# OWASP API Security: API4 — Unrestricted Resource Consumption
+# Rate Limit Bypass Techniques - API Security Testing
+# OWASP API Security: API4 - Unrestricted Resource Consumption
 # Severity: MEDIUM to HIGH
 
 # ============================================================

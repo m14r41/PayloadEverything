@@ -8,10 +8,10 @@ Extract credentials from LSASS, SAM, registry, configuration files, and more.
 
 | File | Description |
 |------|-------------|
-| [`mimikatz_commands.md`](mimikatz_commands.md) | Complete Mimikatz reference — logonpasswords, WDigest, SAM dump, DCSync, Golden/Silver tickets, DPAPI, vault, token manipulation, skeleton key, certificates (T1003, T1558) |
-| [`lsass_dump.ps1`](lsass_dump.ps1) | Multiple LSASS dump methods — comsvcs.dll, ProcDump, MiniDumpWriteDump API, Task Manager, Shadow Copy, reg save. Functions for each approach (T1003.001) |
-| [`sam_extract.md`](sam_extract.md) | SAM/SYSTEM/SECURITY and NTDS.dit extraction — reg save, VSS, esentutl, ntdsutil, DCSync, CrackMapExec. Offline cracking with hashcat modes (T1003.002, T1003.003) |
-| [`credential_search.ps1`](credential_search.ps1) | Automated credential hunting — PowerShell history, IIS web.config, unattend.xml, GPP cpassword, Wi-Fi passwords, .NET connection strings, registry (PuTTY/WinSCP/VNC/AutoLogon), Sticky Notes, KeePass, browser DBs, Credential Manager (T1552) |
+| [`mimikatz_commands.md`](mimikatz_commands.md) | Complete Mimikatz reference - logonpasswords, WDigest, SAM dump, DCSync, Golden/Silver tickets, DPAPI, vault, token manipulation, skeleton key, certificates (T1003, T1558) |
+| [`lsass_dump.ps1`](lsass_dump.ps1) | Multiple LSASS dump methods - comsvcs.dll, ProcDump, MiniDumpWriteDump API, Task Manager, Shadow Copy, reg save. Functions for each approach (T1003.001) |
+| [`sam_extract.md`](sam_extract.md) | SAM/SYSTEM/SECURITY and NTDS.dit extraction - reg save, VSS, esentutl, ntdsutil, DCSync, CrackMapExec. Offline cracking with hashcat modes (T1003.002, T1003.003) |
+| [`credential_search.ps1`](credential_search.ps1) | Automated credential hunting - PowerShell history, IIS web.config, unattend.xml, GPP cpassword, Wi-Fi passwords, .NET connection strings, registry (PuTTY/WinSCP/VNC/AutoLogon), Sticky Notes, KeePass, browser DBs, Credential Manager (T1552) |
 
 ## Quick Start
 

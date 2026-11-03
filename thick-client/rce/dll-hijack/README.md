@@ -1,19 +1,19 @@
-# DLL Hijack — Search-Order Hijacking
+# DLL Hijack - Search-Order Hijacking
 
 Exploit Windows DLL search order to load a malicious DLL when the target application starts.
 
-**MITRE ATT&CK**: T1574.001 — DLL Search Order Hijacking  
+**MITRE ATT&CK**: T1574.001 - DLL Search Order Hijacking  
 **Severity**: HIGH to CRITICAL (CRITICAL if service runs as SYSTEM)
 
 ## Files
 
 | File | Description |
 |------|-------------|
-| [`dll_hijack_template.c`](dll_hijack_template.c) | Proxy DLL template — forwards calls to the real DLL while executing payload. Avoids crashing the app. |
-| [`find_missing_dlls.ps1`](find_missing_dlls.ps1) | Discovery script — finds hijackable DLLs via procmon filters, PE import analysis, writable path checks, known DLL list |
+| [`dll_hijack_template.c`](dll_hijack_template.c) | Proxy DLL template - forwards calls to the real DLL while executing payload. Avoids crashing the app. |
+| [`find_missing_dlls.ps1`](find_missing_dlls.ps1) | Discovery script - finds hijackable DLLs via procmon filters, PE import analysis, writable path checks, known DLL list |
 | [`exports.def`](exports.def) | Pre-built .def export forwarding for VERSION.dll (with WINMM.dll and USERENV.dll variants commented) |
 | [`generate_proxy_def.py`](generate_proxy_def.py) | Auto-generate .def export forwarding files for ANY DLL using pefile |
-| [`sideload_scanner.ps1`](sideload_scanner.ps1) | Find signed executables vulnerable to DLL sideloading — bypasses AppLocker/WDAC |
+| [`sideload_scanner.ps1`](sideload_scanner.ps1) | Find signed executables vulnerable to DLL sideloading - bypasses AppLocker/WDAC |
 
 ## How It Works
 

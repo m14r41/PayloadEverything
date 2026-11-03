@@ -1,6 +1,6 @@
-# Import Feature — File Parsing Attack Surface
+# Import Feature - File Parsing Attack Surface
 
-Payloads targeting desktop application file import/open features. When an app imports a file, it parses it — and parsers have vulnerabilities.
+Payloads targeting desktop application file import/open features. When an app imports a file, it parses it - and parsers have vulnerabilities.
 
 **OWASP**: TC6, TC10  
 **Severity**: HIGH to CRITICAL

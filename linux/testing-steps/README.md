@@ -6,7 +6,7 @@ Comprehensive security assessment checklist for Linux systems.
 
 | File | Description |
 |------|-------------|
-| [`linux_checklist.md`](linux_checklist.md) | Full Linux VAPT checklist — system info, users, sudo/SUID/capabilities, cron, services, network, file permissions, credentials, containers, logs, persistence, evidence collection |
+| [`linux_checklist.md`](linux_checklist.md) | Full Linux VAPT checklist - system info, users, sudo/SUID/capabilities, cron, services, network, file permissions, credentials, containers, logs, persistence, evidence collection |
 
 ## Usage
 
@@ -21,7 +21,7 @@ Use the checklist during engagements to ensure full coverage:
 
 | Folder | Scripts |
 |--------|---------|
-| `../enumeration/` | `linux_enum.sh` — automated system enumeration |
+| `../enumeration/` | `linux_enum.sh` - automated system enumeration |
 | `../privilege-escalation/` | SUID, sudo, capabilities, cron, kernel, PATH, writable file scripts |
 | `../persistence/` | Cron, systemd, SSH, LD_PRELOAD, bashrc persistence scripts |
 | `../credential-harvesting/` | `credential_hunt.sh`, `memory_creds.sh` |

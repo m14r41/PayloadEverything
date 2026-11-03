@@ -10,11 +10,11 @@ Payloads, discovery scripts, and testing procedures for Windows desktop (thick c
 
 | Folder | OWASP | Severity | Description |
 |--------|-------|----------|-------------|
-| [calc-pop/](calc-pop/) | — | PoC | Proof-of-execution payloads (DLL, CHM, shellcode) |
+| [calc-pop/](calc-pop/) | - | PoC | Proof-of-execution payloads (DLL, CHM, shellcode) |
 | [rce/dll-hijack/](rce/dll-hijack/) | TC6 | HIGH-CRIT | DLL search-order hijacking + proxy DLL templates |
 | [rce/chm/](rce/chm/) | TC6 | HIGH | Compiled HTML Help command execution |
 | [rce/process-injection/](rce/process-injection/) | TC6 | HIGH | CreateRemoteThread, DLL injection, APC injection |
-| [reverse-shell/](reverse-shell/) | TC6 | CRIT | TCP callback shells — DLL, PowerShell, msfvenom |
+| [reverse-shell/](reverse-shell/) | TC6 | CRIT | TCP callback shells - DLL, PowerShell, msfvenom |
 
 ### Data Security
 

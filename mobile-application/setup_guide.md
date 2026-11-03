@@ -2,7 +2,7 @@
 # Tools, configuration, and workflow for Android & iOS testing
 
 # ============================================================
-# 1. FRIDA — Dynamic Instrumentation Framework
+# 1. FRIDA - Dynamic Instrumentation Framework
 # ============================================================
 # Install Frida (host)
 pip install frida-tools
@@ -30,7 +30,7 @@ frida -U -l script.js -n "App Name"                    # Attach to running
 frida -U -l script.js --realm=emulated -f com.app      # Emulator
 
 # ============================================================
-# 2. OBJECTION — Runtime Mobile Exploration
+# 2. OBJECTION - Runtime Mobile Exploration
 # ============================================================
 # Install
 pip install objection
@@ -41,18 +41,18 @@ objection -g com.target.app explore --startup-command "android sslpinning disabl
 objection patchapk --source target.apk    # Patch APK with Frida gadget (no root)
 
 # Key commands inside objection
-# env                                      — App paths
-# android sslpinning disable              — Bypass SSL pinning
-# android root disable                    — Bypass root detection
-# ios sslpinning disable                  — iOS SSL bypass
-# ios jailbreak disable                   — iOS jailbreak bypass
-# android/ios hooking list classes         — List classes
-# android/ios hooking search classes auth  — Search classes
-# sqlite connect <path>                   — Open SQLite DB
-# memory search "password"                — Search memory
+# env                                      - App paths
+# android sslpinning disable              - Bypass SSL pinning
+# android root disable                    - Bypass root detection
+# ios sslpinning disable                  - iOS SSL bypass
+# ios jailbreak disable                   - iOS jailbreak bypass
+# android/ios hooking list classes         - List classes
+# android/ios hooking search classes auth  - Search classes
+# sqlite connect <path>                   - Open SQLite DB
+# memory search "password"                - Search memory
 
 # ============================================================
-# 3. BURP SUITE — HTTP/HTTPS Proxy
+# 3. BURP SUITE - HTTP/HTTPS Proxy
 # ============================================================
 # Android proxy setup:
 #   1. Settings → Wi-Fi → Long press → Modify → Advanced → Manual proxy
@@ -77,7 +77,7 @@ adb reboot
 #   5. Settings → General → About → Certificate Trust Settings → Enable
 
 # ============================================================
-# 4. ADB — Android Debug Bridge
+# 4. ADB - Android Debug Bridge
 # ============================================================
 # Device connection
 adb devices                     # List devices
@@ -107,12 +107,12 @@ adb shell am start -a android.intent.action.VIEW -d "scheme://host"
 # ============================================================
 # 5. ANDROID DECOMPILATION TOOLS
 # ============================================================
-# APKTool — Resource decompilation
+# APKTool - Resource decompilation
 pip install apktool
 apktool d target.apk -o output_dir
 apktool b output_dir -o modified.apk
 
-# JADX — Java decompilation
+# JADX - Java decompilation
 # Download from: https://github.com/skylot/jadx/releases
 jadx -d output_src target.apk
 jadx-gui target.apk              # GUI mode
@@ -135,7 +135,7 @@ ssh root@<device_ip>            # Default password: alpine
 # Class-dump
 class-dump /path/to/binary > classes.h
 
-# Clutch — Decrypt IPAs
+# Clutch - Decrypt IPAs
 clutch -d com.target.app
 
 # Cycript (older iOS)

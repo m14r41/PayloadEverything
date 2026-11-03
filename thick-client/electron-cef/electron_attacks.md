@@ -1,7 +1,7 @@
 # Electron / CEF Application Attacks
 
 > Many modern "desktop apps" are Electron/CEF wrappers (VS Code, Slack, Teams, Discord, etc.)
-> Severity: CRITICAL — RCE via XSS when nodeIntegration is enabled
+> Severity: CRITICAL - RCE via XSS when nodeIntegration is enabled
 
 ## Identify Electron/CEF App
 ```powershell
@@ -25,14 +25,14 @@ npx asar extract resources/app.asar ./extracted
 # or for older apps:
 npx asar extract resources/app.asar.unpacked ./extracted
 
-# Some apps don't use asar — source is directly in resources/app/
+# Some apps don't use asar - source is directly in resources/app/
 ```
 
 ## 2. Check Security Configuration (CRITICAL)
 
 ### In extracted main.js / main process:
 ```javascript
-// DANGEROUS — look for these:
+// DANGEROUS - look for these:
 new BrowserWindow({
     webPreferences: {
         nodeIntegration: true,          // CRITICAL: gives renderer full Node.js access
@@ -81,7 +81,7 @@ new BrowserWindow({
 
 ## 4. Preload Script Analysis
 ```javascript
-// Check preload.js — it bridges web content and Node.js
+// Check preload.js - it bridges web content and Node.js
 // Look for overly permissive APIs exposed via contextBridge:
 
 contextBridge.exposeInMainWorld('api', {

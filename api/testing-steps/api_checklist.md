@@ -1,4 +1,4 @@
-# OWASP API Security Top 10 — VAPT Checklist
+# OWASP API Security Top 10 - VAPT Checklist
 # Practical checklist with curl commands for each category
 
 # ============================================================
@@ -206,13 +206,13 @@ curl -X POST https://api.target.com/graphql \
 # TOOLS
 # ============================================================
 
-# Burp Suite — HTTP proxy, scanner, Intruder
-# Postman — API collection testing
-# ffuf — endpoint fuzzing
-# Arjun — hidden parameter discovery
-# jwt_tool — JWT manipulation
-# InQL — GraphQL scanner (Burp)
-# Kiterunner — API endpoint brute-force
-# nuclei — template-based scanning
-# SoapUI — SOAP API testing
-# graphw00f — GraphQL fingerprinting
+# Burp Suite - HTTP proxy, scanner, Intruder
+# Postman - API collection testing
+# ffuf - endpoint fuzzing
+# Arjun - hidden parameter discovery
+# jwt_tool - JWT manipulation
+# InQL - GraphQL scanner (Burp)
+# Kiterunner - API endpoint brute-force
+# nuclei - template-based scanning
+# SoapUI - SOAP API testing
+# graphw00f - GraphQL fingerprinting

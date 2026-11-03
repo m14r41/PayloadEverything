@@ -1,4 +1,4 @@
-# CHM — Compiled HTML Help Exploitation
+# CHM - Compiled HTML Help Exploitation
 
 Execute commands via `.chm` (Compiled HTML Help) files using embedded ActiveX objects.
 
@@ -10,7 +10,7 @@ Execute commands via `.chm` (Compiled HTML Help) files using embedded ActiveX ob
 | File | Description |
 |------|-------------|
 | [`chm_rce.html`](chm_rce.html) | HTML source with multiple ActiveX command execution methods |
-| [`build_chm.ps1`](build_chm.ps1) | PowerShell build script — compiles HTML into `.chm` |
+| [`build_chm.ps1`](build_chm.ps1) | PowerShell build script - compiles HTML into `.chm` |
 
 ## How It Works
 
@@ -19,7 +19,7 @@ CHM files can embed ActiveX `ShortCut` objects (`clsid:adb880a6-d8ff-11cf-9377-0
 ## Step-by-Step
 
 ### 1. Edit the Payload
-Edit `chm_rce.html` — change `calc.exe` to your command (or leave as PoC).
+Edit `chm_rce.html` - change `calc.exe` to your command (or leave as PoC).
 
 ### 2. Compile
 ```powershell

@@ -1,4 +1,4 @@
-# Common Desktop Application Import Formats — Attack Surface
+# Common Desktop Application Import Formats - Attack Surface
 
 ## Project / Solution Files
 

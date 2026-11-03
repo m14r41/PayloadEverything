@@ -118,7 +118,7 @@ $wc.DownloadString("https://target.com/api")
 # Frida (if applicable)
 frida -f target.exe -l ssl_bypass.js --no-pause
 
-# For .NET applications — patch ServerCertificateValidationCallback
+# For .NET applications - patch ServerCertificateValidationCallback
 # Inject: ServicePointManager.ServerCertificateValidationCallback = (s, cert, chain, err) => true;
 
 # For WinHTTP

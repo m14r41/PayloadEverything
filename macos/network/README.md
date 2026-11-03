@@ -6,8 +6,8 @@ Network attacks and traffic interception techniques specific to macOS.
 
 | File | Description |
 |------|-------------|
-| [`network_attacks.md`](network_attacks.md) | macOS network attacks — mDNS/Bonjour exploitation, AirDrop abuse, Wi-Fi deauth, Bluetooth, DNS spoofing, proxy manipulation, LLMNR poisoning, Handoff/Continuity |
-| [`proxy_intercept.md`](proxy_intercept.md) | Traffic interception — Burp/mitmproxy setup, system proxy, CA install, Proxifier, pfctl transparent proxy, Electron/Java/Python proxy, cert pinning bypass |
+| [`network_attacks.md`](network_attacks.md) | macOS network attacks - mDNS/Bonjour exploitation, AirDrop abuse, Wi-Fi deauth, Bluetooth, DNS spoofing, proxy manipulation, LLMNR poisoning, Handoff/Continuity |
+| [`proxy_intercept.md`](proxy_intercept.md) | Traffic interception - Burp/mitmproxy setup, system proxy, CA install, Proxifier, pfctl transparent proxy, Electron/Java/Python proxy, cert pinning bypass |
 
 ## Quick Start
 

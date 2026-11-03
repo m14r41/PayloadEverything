@@ -2,7 +2,7 @@
 
 Persist through user login using various login item mechanisms.
 
-**MITRE ATT&CK**: T1547.015 — Login Items
+**MITRE ATT&CK**: T1547.015 - Login Items
 
 ---
 
@@ -30,7 +30,7 @@ osascript -e 'tell application "System Events" to delete login item "payload"'
 
 ## 2. SMLoginItemSetEnabled (Service Management)
 
-Register a helper app as a login item through the Service Management framework. More stealthy — doesn't appear in System Preferences login items list on older macOS versions.
+Register a helper app as a login item through the Service Management framework. More stealthy - doesn't appear in System Preferences login items list on older macOS versions.
 
 ```swift
 // In the main app:
