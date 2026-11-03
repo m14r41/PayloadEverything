@@ -32,12 +32,33 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <io.h>
 #include <vector>
 #include <algorithm>
 
 #pragma comment(lib, "psapi.lib")
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "advapi32.lib")
+
+// ---- ANSI color (C1 "classic pentester" palette) ----
+// Auto-disabled when stdout is redirected or when --no-color is passed.
+static bool g_color = true;
+#define C(s)    (g_color ? "\x1b[" s "m" : "")
+#define RESET   C("0")
+#define BOLD    C("1")
+#define RED     C("91")
+#define GREEN   C("92")
+#define YELLOW  C("93")
+#define CYAN    C("96")
+#define GRAY    C("90")
+
+static void enable_color(void) {
+    if (!_isatty(_fileno(stdout))) { g_color = false; return; }
+    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD mode = 0;
+    if (GetConsoleMode(h, &mode))
+        SetConsoleMode(h, mode | 0x0004);   // ENABLE_VIRTUAL_TERMINAL_PROCESSING
+}
 
 static void get_user_for_pid(DWORD pid, char* out, size_t cap) {
     strncpy_s(out, cap, "-", _TRUNCATE);
@@ -165,6 +186,184 @@ static void get_name_for_pid(DWORD pid, char* out, size_t cap) {
     CloseHandle(h);
 }
 
+static void get_path_for_pid(DWORD pid, char* out, size_t cap) {
+    strncpy_s(out, cap, "-", _TRUNCATE);
+    HANDLE h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+    if (!h) return;
+    DWORD plen = (DWORD)cap;
+    QueryFullProcessImageNameA(h, 0, out, &plen);
+    CloseHandle(h);
+}
+
+static const char* arch_for_pid(DWORD pid) {
+    HANDLE h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+    if (!h) return "?";
+    BOOL wow = FALSE;
+    const char* r = "?";
+    if (IsWow64Process(h, &wow)) r = wow ? "x86 (WOW64)" : "x64";
+    CloseHandle(h);
+    return r;
+}
+
+static double memory_mb_for_pid(DWORD pid) {
+    HANDLE h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+    if (!h) return 0.0;
+    PROCESS_MEMORY_COUNTERS pmc = {};
+    double mb = 0.0;
+    if (GetProcessMemoryInfo(h, &pmc, sizeof(pmc)))
+        mb = pmc.WorkingSetSize / (1024.0 * 1024.0);
+    CloseHandle(h);
+    return mb;
+}
+
+static const char* err_name(DWORD e) {
+    switch (e) {
+        case 0:   return "SUCCESS";
+        case 5:   return "ERROR_ACCESS_DENIED (run as Administrator, or target is protected)";
+        case 87:  return "ERROR_INVALID_PARAMETER (PID does not exist)";
+        case 6:   return "ERROR_INVALID_HANDLE";
+        case 8:   return "ERROR_NOT_ENOUGH_MEMORY";
+        case 126: return "ERROR_MOD_NOT_FOUND (DLL or a dependency could not be loaded)";
+        case 193: return "ERROR_BAD_EXE_FORMAT (arch mismatch — x86 DLL into x64 target or vice versa)";
+        case 998: return "ERROR_NOACCESS (bad memory address in target)";
+        case 1114:return "ERROR_DLL_INIT_FAILED (DLL loaded but DllMain returned FALSE)";
+        default:  return "(no symbolic name mapped)";
+    }
+}
+
+static const char* pe_arch_of_file(const char* path);   // forward decl
+
+// Normalize arch strings ("x64", "x86 (WOW64)", "ARM64") -> "x64" / "x86" / "ARM64" / "?"
+static const char* arch_short(const char* a) {
+    if (strncmp(a, "x64",   3) == 0) return "x64";
+    if (strncmp(a, "x86",   3) == 0) return "x86";
+    if (strncmp(a, "ARM64", 5) == 0) return "ARM64";
+    return "?";
+}
+
+// Search the directory of `originalDll` for a .dll whose PE Machine matches `wantArch`
+// ("x64" | "x86" | "ARM64"). Returns true + fills outPath if a match is found.
+static bool find_sibling_dll(const char* originalDll, const char* wantArch,
+                             char* outPath, size_t outCap) {
+    char dir[MAX_PATH];
+    strncpy_s(dir, sizeof(dir), originalDll, _TRUNCATE);
+    char* lastSlash = strrchr(dir, '\\');
+    if (!lastSlash) return false;
+    *lastSlash = 0;
+
+    char search[MAX_PATH];
+    _snprintf_s(search, sizeof(search), _TRUNCATE, "%s\\*.dll", dir);
+
+    WIN32_FIND_DATAA fd;
+    HANDLE h = FindFirstFileA(search, &fd);
+    if (h == INVALID_HANDLE_VALUE) return false;
+
+    bool found = false;
+    do {
+        char candidate[MAX_PATH];
+        _snprintf_s(candidate, sizeof(candidate), _TRUNCATE, "%s\\%s", dir, fd.cFileName);
+        if (_stricmp(candidate, originalDll) == 0) continue;     // skip the one we started with
+        const char* cand_arch = pe_arch_of_file(candidate);
+        if (strcmp(cand_arch, wantArch) == 0) {
+            strncpy_s(outPath, outCap, candidate, _TRUNCATE);
+            found = true;
+            break;
+        }
+    } while (FindNextFileA(h, &fd));
+    FindClose(h);
+    return found;
+}
+
+static const char* pe_arch_of_file(const char* path) {
+    HANDLE f = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, nullptr,
+                           OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (f == INVALID_HANDLE_VALUE) return "?";
+    BYTE hdr[0x400] = {};
+    DWORD rd = 0;
+    ReadFile(f, hdr, sizeof(hdr), &rd, nullptr);
+    CloseHandle(f);
+    if (rd < 0x40 || hdr[0] != 'M' || hdr[1] != 'Z') return "not a PE";
+    DWORD e_lfanew = *(DWORD*)(hdr + 0x3C);
+    if (e_lfanew + 6 > rd) return "?";
+    if (hdr[e_lfanew] != 'P' || hdr[e_lfanew+1] != 'E') return "not a PE";
+    WORD machine = *(WORD*)(hdr + e_lfanew + 4);
+    switch (machine) {
+        case 0x8664: return "x64";
+        case 0x014c: return "x86";
+        case 0xaa64: return "ARM64";
+        default:     return "unknown";
+    }
+}
+
+static long long file_size_bytes(const char* path) {
+    WIN32_FILE_ATTRIBUTE_DATA fad = {};
+    if (!GetFileAttributesExA(path, GetFileExInfoStandard, &fad)) return -1;
+    LARGE_INTEGER li; li.HighPart = fad.nFileSizeHigh; li.LowPart = fad.nFileSizeLow;
+    return li.QuadPart;
+}
+
+// Print a dot-leader step line:
+//   [N]  <desc>  ........  <status>  <value>
+// Every line's status column lands at the same column regardless of desc width.
+static void step(int n, const char* desc, const char* status, const char* value) {
+    const int W = 50;                       // target width of (desc + leader)
+    int dlen = (int)strlen(desc);
+    char leader[80];
+    int li = 0;
+    leader[li++] = ' '; leader[li++] = ' '; // 2 spaces after desc
+    int dots = W - dlen - 4;                // 2 sp before dots, 2 sp after
+    if (dots < 2) dots = 2;
+    for (int i = 0; i < dots && li < (int)sizeof(leader) - 3; i++) leader[li++] = '.';
+    leader[li++] = ' '; leader[li++] = ' ';
+    leader[li] = 0;
+    bool ok = (strcmp(status, "ok") == 0);
+    const char* status_color = ok ? GREEN : RED;
+    printf("    [%s%d%s]  %s%s%s%s%s%-4s%s %s%s%s\n",
+           CYAN, n, RESET,
+           desc,
+           GRAY, leader, RESET,
+           status_color, BOLD, status, RESET,
+           CYAN, value, RESET);
+}
+
+// Format a pointer with leading zeros stripped: "0x1DAE7EB0000", not "000001DAE7EB0000"
+static const char* short_ptr(const void* p, char* out, size_t cap) {
+    unsigned long long v = (unsigned long long)(uintptr_t)p;
+    _snprintf_s(out, cap, _TRUNCATE, "0x%llX", v);
+    return out;
+}
+
+static void show_top5_pids(void) {
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap == INVALID_HANDLE_VALUE) return;
+    struct R { DWORD pid; char name[64]; SIZE_T ws; };
+    std::vector<R> rows;
+    PROCESSENTRY32 pe = { sizeof(pe) };
+    if (Process32First(snap, &pe)) do {
+        if (pe.th32ProcessID <= 4) continue;
+        HANDLE t = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pe.th32ProcessID);
+        if (!t) continue;
+        CloseHandle(t);
+        R r = {}; r.pid = pe.th32ProcessID;
+        strncpy_s(r.name, sizeof(r.name), pe.szExeFile, _TRUNCATE);
+        HANDLE h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, r.pid);
+        if (h) {
+            PROCESS_MEMORY_COUNTERS pmc = {};
+            if (GetProcessMemoryInfo(h, &pmc, sizeof(pmc))) r.ws = pmc.WorkingSetSize;
+            CloseHandle(h);
+        }
+        rows.push_back(r);
+    } while (Process32Next(snap, &pe));
+    CloseHandle(snap);
+    std::sort(rows.begin(), rows.end(), [](const R& a, const R& b){ return a.ws > b.ws; });
+    printf("[*] top 5 live PIDs:\n");
+    int n = 0;
+    for (const auto& r : rows) {
+        if (n++ >= 5) break;
+        printf("      %-6lu  %-28s  %6.1f MB\n", r.pid, r.name, r.ws / (1024.0 * 1024.0));
+    }
+}
+
 static bool is_all_digits(const char* s) {
     if (!s || !*s) return false;
     for (; *s; s++) if (*s < '0' || *s > '9') return false;
@@ -257,6 +456,16 @@ static unsigned char* build_msgbox_shellcode(const char* text, size_t* outLen) {
 }
 
 int main(int argc, char** argv) {
+    // --no-color flag disables ANSI even on a TTY (strip before main loop)
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--no-color") == 0) {
+            g_color = false;
+            for (int j = i; j < argc - 1; j++) argv[j] = argv[j + 1];
+            argc--; i--;
+        }
+    }
+    if (g_color) enable_color();
+
     const char* target_arg = nullptr;
     const char* spawn_cmd  = nullptr;
     bool msg_mode = true;                    // default: MessageBox
@@ -301,19 +510,53 @@ int main(int argc, char** argv) {
     const char* resolve_name = target_arg ? target_arg : "MVTC.exe";
     if (is_all_digits(resolve_name)) {
         target_pid = (DWORD)strtoul(resolve_name, nullptr, 10);
+        // Validate the PID actually exists before any injection work.
+        HANDLE hVerify = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, target_pid);
+        if (!hVerify) {
+            DWORD e = GetLastError();
+            char desc[128], val[64];
+            _snprintf_s(desc, sizeof(desc), _TRUNCATE,
+                        "OpenProcess(%lu, PROCESS_ALL_ACCESS)", target_pid);
+            _snprintf_s(val, sizeof(val), _TRUNCATE, "err %lu", e);
+            printf("%s[+]%s target\n", GREEN, RESET);
+            printf("    - PID %s%lu%s (resolving...)\n\n", CYAN, target_pid, RESET);
+            step(1, desc, "fail", val);
+            printf("\n%s[!]%s %s%sfailed%s   step [1] - %s\n",
+                   RED, RESET, RED, BOLD, RESET, err_name(e));
+            printf("%s[*]%s %shint%s     pop.exe --list    pop.exe <name>\n",
+                   YELLOW, RESET, YELLOW, RESET);
+            show_top5_pids();
+            system("pause");
+            return 1;
+        }
+        CloseHandle(hVerify);
     } else {
-        printf("[*] searching for %s...\n", resolve_name);
         target_pid = find_by_name(resolve_name);
     }
     if (!target_pid) {
-        printf("[!] no process matching '%s' is running. Launch it first.\n", resolve_name);
+        printf("%s[+]%s target\n", GREEN, RESET);
+        printf("    - %s%s%s (not running)\n\n", CYAN, resolve_name, RESET);
+        printf("%s[!]%s %s%sfailed%s   no process named '%s' is running on this machine\n",
+               RED, RESET, RED, BOLD, RESET, resolve_name);
+        printf("%s[*]%s %shint%s     pop.exe --list    tasklist    (launch the app first)\n",
+               YELLOW, RESET, YELLOW, RESET);
+        show_top5_pids();
         system("pause");
         return 1;
     }
 
-    char host_name[260];
+    char host_name[260] = {}, host_path[MAX_PATH] = {}, host_user[128] = {};
     get_name_for_pid(target_pid, host_name, sizeof(host_name));
-    printf("[+] target: PID %lu (%s)\n", target_pid, host_name);
+    get_path_for_pid(target_pid, host_path, sizeof(host_path));
+    get_user_for_pid(target_pid, host_user, sizeof(host_user));
+    double host_mb = memory_mb_for_pid(target_pid);
+    const char* host_arch = arch_for_pid(target_pid);
+
+    printf("%s[+]%s target\n", GREEN, RESET);
+    printf("    - PID %s%lu%s, name %s%s%s, arch %s%s%s\n",
+           CYAN, target_pid, RESET, CYAN, host_name, RESET, CYAN, host_arch, RESET);
+    printf("    - user %s%s%s, memory %s%.1f MB%s\n",
+           CYAN, host_user, RESET, CYAN, host_mb, RESET);
 
     unsigned char* sc = nullptr;
     size_t sclen = 0;
@@ -323,26 +566,149 @@ int main(int argc, char** argv) {
     if (dll_path) {
         char fullDll[MAX_PATH];
         if (!GetFullPathNameA(dll_path, MAX_PATH, fullDll, nullptr)) {
-            printf("[!] can't resolve DLL path: %s\n", dll_path);
+            printf("%s[!]%s %s%sfailed%s   could not resolve DLL path: %s\n",
+                   RED, RESET, RED, BOLD, RESET, dll_path);
             system("pause"); return 2;
         }
-        printf("[+] mode: DLL inject  path: %s\n", fullDll);
+        long long dll_size = file_size_bytes(fullDll);
+        if (dll_size < 0) {
+            printf("%s[!]%s %s%sfailed%s   DLL does not exist on disk: %s\n",
+                   RED, RESET, RED, BOLD, RESET, fullDll);
+            printf("%s[*]%s %shint%s     check the path and try again\n",
+                   YELLOW, RESET, YELLOW, RESET);
+            system("pause"); return 2;
+        }
+        const char* dll_arch = pe_arch_of_file(fullDll);
+        const char* dll_base = strrchr(fullDll, '\\'); dll_base = dll_base ? dll_base + 1 : fullDll;
+        double dll_kb = dll_size / 1024.0;
+
+        printf("\n%s[+]%s payload\n", GREEN, RESET);
+        printf("    - %s%s%s (%s%s%s, %s%.0f KB%s)\n",
+               CYAN, dll_base, RESET, CYAN, dll_arch, RESET, CYAN, dll_kb, RESET);
+        printf("    - %s%s%s\n\n", CYAN, fullDll, RESET);
+
+        const char* target_arch_s = arch_short(host_arch);
+        const char* dll_arch_s    = arch_short(dll_arch);
+        if (strcmp(target_arch_s, "?") != 0
+            && strcmp(dll_arch_s, "?") != 0
+            && strcmp(target_arch_s, dll_arch_s) != 0) {
+
+            // Auto-recover: look for a sibling DLL in the same folder with the right arch.
+            char swapDll[MAX_PATH];
+            if (find_sibling_dll(fullDll, target_arch_s, swapDll, sizeof(swapDll))) {
+                printf("%s[*]%s DLL/target arch mismatch (target %s, DLL %s)\n",
+                       YELLOW, RESET, host_arch, dll_arch);
+                printf("%s[*]%s auto-switching to sibling DLL that matches target: %s%s%s\n",
+                       YELLOW, RESET, CYAN, swapDll, RESET);
+                strncpy_s(fullDll, sizeof(fullDll), swapDll, _TRUNCATE);
+                dll_size = file_size_bytes(fullDll);
+                dll_arch = pe_arch_of_file(fullDll);
+                dll_base = strrchr(fullDll, '\\'); dll_base = dll_base ? dll_base + 1 : fullDll;
+                dll_kb   = dll_size / 1024.0;
+                printf("%s[+]%s payload (switched)\n", GREEN, RESET);
+                printf("    - %s%s%s (%s%s%s, %s%.0f KB%s)\n",
+                       CYAN, dll_base, RESET, CYAN, dll_arch, RESET, CYAN, dll_kb, RESET);
+                printf("    - %s%s%s\n\n", CYAN, fullDll, RESET);
+            } else {
+                printf("%s[!]%s %s%sfailed%s   architecture mismatch: target is %s, DLL is %s\n",
+                       RED, RESET, RED, BOLD, RESET, host_arch, dll_arch);
+                printf("%s[*]%s %shint%s     put a %s-arch DLL next to this one, or rebuild for %s\n",
+                       YELLOW, RESET, YELLOW, RESET, target_arch_s, host_arch);
+                system("pause"); return 2;
+            }
+        }
+
+        char desc[160], val[80], p1[48], p2[48], p3[48];
 
         HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, target_pid);
-        if (!hProc) { printf("[!] OpenProcess %lu\n", GetLastError()); system("pause"); return 3; }
+        _snprintf_s(desc, sizeof(desc), _TRUNCATE,
+                    "OpenProcess(%lu, PROCESS_ALL_ACCESS)", target_pid);
+        if (!hProc) {
+            DWORD e = GetLastError();
+            _snprintf_s(val, sizeof(val), _TRUNCATE, "err %lu", e);
+            step(1, desc, "fail", val);
+            printf("\n%s[!]%s %s%sfailed%s   step [1] - %s\n",
+                   RED, RESET, RED, BOLD, RESET, err_name(e));
+            if (e == 5) printf("%s[*]%s %shint%s     run cmd as Administrator, or pick a process you own\n",
+                               YELLOW, RESET, YELLOW, RESET);
+            system("pause"); return 3;
+        }
+        _snprintf_s(val, sizeof(val), _TRUNCATE, "handle %s", short_ptr(hProc, p1, sizeof(p1)));
+        step(1, desc, "ok", val);
+
         size_t len = strlen(fullDll) + 1;
         LPVOID buf = VirtualAllocEx(hProc, nullptr, len,
                                     MEM_COMMIT|MEM_RESERVE, PAGE_READWRITE);
-        WriteProcessMemory(hProc, buf, fullDll, len, nullptr);
+        _snprintf_s(desc, sizeof(desc), _TRUNCATE, "VirtualAllocEx(%zu, RW)", len);
+        if (!buf) {
+            DWORD e = GetLastError();
+            _snprintf_s(val, sizeof(val), _TRUNCATE, "err %lu", e);
+            step(2, desc, "fail", val);
+            printf("\n%s[!]%s %s%sfailed%s   step [2] - %s\n",
+                   RED, RESET, RED, BOLD, RESET, err_name(e));
+            CloseHandle(hProc); system("pause"); return 4;
+        }
+        step(2, desc, "ok", short_ptr(buf, p2, sizeof(p2)));
+
+        SIZE_T wrote = 0;
+        _snprintf_s(desc, sizeof(desc), _TRUNCATE,
+                    "WriteProcessMemory(%s, path, %zu)",
+                    short_ptr(buf, p1, sizeof(p1)), len);
+        if (!WriteProcessMemory(hProc, buf, fullDll, len, &wrote) || wrote != len) {
+            DWORD e = GetLastError();
+            _snprintf_s(val, sizeof(val), _TRUNCATE, "wrote %zu err %lu", wrote, e);
+            step(3, desc, "fail", val);
+            printf("\n%s[!]%s %s%sfailed%s   step [3] - %s\n",
+                   RED, RESET, RED, BOLD, RESET, err_name(e));
+            CloseHandle(hProc); system("pause"); return 4;
+        }
+        _snprintf_s(val, sizeof(val), _TRUNCATE, "%zu B", wrote);
+        step(3, desc, "ok", val);
+
         LPTHREAD_START_ROUTINE llA = (LPTHREAD_START_ROUTINE)GetProcAddress(
             GetModuleHandleA("kernel32.dll"), "LoadLibraryA");
+        step(4, "GetProcAddress(kernel32, LoadLibraryA)", "ok",
+             short_ptr((void*)llA, p3, sizeof(p3)));
+
         HANDLE hT = CreateRemoteThread(hProc, nullptr, 0, llA, buf, 0, nullptr);
-        if (!hT) { printf("[!] CreateRemoteThread %lu\n", GetLastError()); CloseHandle(hProc); system("pause"); return 4; }
-        WaitForSingleObject(hT, 10000);
+        if (!hT) {
+            DWORD e = GetLastError();
+            _snprintf_s(val, sizeof(val), _TRUNCATE, "err %lu", e);
+            step(5, "CreateRemoteThread(entry=[4], arg=[2])", "fail", val);
+            printf("\n%s[!]%s %s%sfailed%s   step [5] - %s\n",
+                   RED, RESET, RED, BOLD, RESET, err_name(e));
+            if (e == 5) printf("%s[*]%s %shint%s     EDR/Defender blocked remote-thread; try an exclusion\n",
+                               YELLOW, RESET, YELLOW, RESET);
+            CloseHandle(hProc); system("pause"); return 4;
+        }
+        _snprintf_s(val, sizeof(val), _TRUNCATE, "tid %s", short_ptr(hT, p1, sizeof(p1)));
+        step(5, "CreateRemoteThread(entry=[4], arg=[2])", "ok", val);
+
+        DWORD wr = WaitForSingleObject(hT, 10000);
         DWORD hmod = 0; GetExitCodeThread(hT, &hmod);
-        printf("[+] remote LoadLibrary returned HMODULE 0x%lx\n", hmod);
+        if (wr != WAIT_OBJECT_0) {
+            step(6, "GetExitCodeThread", "fail", "timeout (10s)");
+            printf("\n%s[!]%s %s%sfailed%s   step [6] - remote thread did not return in time\n",
+                   RED, RESET, RED, BOLD, RESET);
+            printf("%s[*]%s %shint%s     the DLL's DllMain may be blocking; try a simpler DLL\n",
+                   YELLOW, RESET, YELLOW, RESET);
+            CloseHandle(hT); CloseHandle(hProc); system("pause"); return 5;
+        }
+        if (hmod == 0) {
+            step(6, "GetExitCodeThread", "fail", "HMODULE 0 (load failed)");
+            printf("\n%s[!]%s %s%sfailed%s   step [6] - LoadLibraryA returned NULL inside target\n",
+                   RED, RESET, RED, BOLD, RESET);
+            printf("%s[*]%s %shint%s     arch mismatch, missing dep, Defender quarantine, or DllMain=FALSE\n",
+                   YELLOW, RESET, YELLOW, RESET);
+            CloseHandle(hT); CloseHandle(hProc); system("pause"); return 5;
+        }
+        _snprintf_s(val, sizeof(val), _TRUNCATE, "HMODULE 0x%lX", hmod);
+        step(6, "GetExitCodeThread", "ok", val);
+
+        printf("\n%s[+]%s %s%ssuccess%s  DLL loaded inside %s%s%s (PID %s%lu%s)\n",
+               GREEN, RESET, GREEN, BOLD, RESET, CYAN, host_name, RESET, CYAN, target_pid, RESET);
+
         CloseHandle(hT); CloseHandle(hProc);
-        printf("\n[+] DONE. DLL loaded inside %s.\n", host_name);
         system("pause");
         return 0;
     }

