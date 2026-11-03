@@ -35,6 +35,8 @@ SOURCES=(
     "process_hollowing_v2.cpp:hollow_v2:"
     "shellcode_runner.cpp:runner:"
     "shellcode_runner_v2.cpp:runner_v2:"
+    "thread_hijack.cpp:thread_hijack:"
+    "early_bird_apc.cpp:early_bird_apc:"
 )
 
 # ---- colors (auto-off when stdout is not a TTY) ----

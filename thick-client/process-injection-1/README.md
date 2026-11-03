@@ -10,7 +10,9 @@ Inject shellcode or DLLs into a running Windows process to execute code in its c
 |------|-----------|------------|
 | [`classic_injection.cpp`](classic_injection.cpp) | `VirtualAllocEx` + `WriteProcessMemory` + `CreateRemoteThread(entry = shellcode)` | T1055.002 |
 | [`dll_injection.cpp`](dll_injection.cpp) | Write DLL path + `CreateRemoteThread(entry = LoadLibraryA)` | T1055.001 |
-| [`apc_injection.cpp`](apc_injection.cpp) | `VirtualAllocEx` + `WriteProcessMemory` + `QueueUserAPC` on every thread | T1055.004 |
+| [`apc_injection.cpp`](apc_injection.cpp) | `VirtualAllocEx` + `WriteProcessMemory` + `QueueUserAPC` on every thread of a live target | T1055.004 |
+| [`thread_hijack.cpp`](thread_hijack.cpp) | `SuspendThread` -> write shellcode -> `SetThreadContext` to swap RIP -> `ResumeThread`. No new thread is created in the target. | T1055.003 |
+| [`early_bird_apc.cpp`](early_bird_apc.cpp) | `CreateProcess SUSPENDED` -> write shellcode -> `QueueUserAPC` on primary thread -> `ResumeThread`. APC fires inside `LdrInitializeThunk`, before the target's own entry point. | T1055.004 variant |
 | [`process_hollowing.cpp`](process_hollowing.cpp) | `CreateProcess SUSPENDED` -> `NtUnmapViewOfSection` -> map payload PE (relocations + imports) -> resume | T1055.012 |
 | [`shellcode_runner.cpp`](shellcode_runner.cpp) | Local shellcode exec: `VirtualAlloc(RW)` -> copy -> `VirtualProtect(RX)` -> run (**NOT remote injection** - self-contained test harness) | T1055 base |
 
