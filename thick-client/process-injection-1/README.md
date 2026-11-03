@@ -18,6 +18,27 @@ All injectors (classic + apc) use shellcode built with `EXITFUNC=thread` so the 
 
 ## Build (Linux cross-compile)
 
+### Easiest: the interactive script
+
+```bash
+chmod +x build_injectors.sh
+./build_injectors.sh
+```
+
+What it does:
+
+- Lists all 10 injector sources in a numbered menu. Pick one, several (comma-separated), or `all`.
+- Asks for arch: `1) x64`, `2) x86`, `3) both`.
+- Auto-installs `mingw-w64` with `sudo apt` if missing (idempotent).
+- Downloads any missing `.cpp` from the GitHub raw URL (so the script works standalone too, not just from the cloned repo).
+- Handles `shellcode_runner_v2` automatically: compiles the `.rc` with `windres` first, then links it.
+- Writes each binary as `<name>_<arch>.exe` next to the script, for example `inject_x64.exe`, `dll_inject_x86.exe`.
+- Remembers your last selection and arch in `build_injectors.conf`, so pressing Enter twice rebuilds the same set next time.
+
+Nothing network-related in these injectors: they take the target PID or name at runtime, so there is no LHOST or LPORT to bake in or validate.
+
+### Manual one-liner
+
 ```bash
 sudo apt install -y mingw-w64 && \
   for f in classic_injection apc_injection dll_injection process_hollowing shellcode_runner; do \
