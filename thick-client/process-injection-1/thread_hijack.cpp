@@ -1,6 +1,18 @@
 /*
  * Thread Execution Hijacking - MITRE ATT&CK T1055.003
  *
+ * Plain English:
+ *   Freeze an existing thread of the target, rewrite its CPU program
+ *   counter (RIP on x64) so it points at our shellcode, then resume.
+ *   The target's own thread runs our code as its very next
+ *   instruction, at full speed.
+ *
+ * What makes it different from the others:
+ *   NO new thread AND the fire is deterministic (unlike APC which may
+ *   never fire). The hijacked thread never returns to its original job
+ *   because its RIP is gone, so this technique replaces that thread.
+ *   Best choice when you need both stealth and reliability.
+ *
  * Pick any thread of a running target. Suspend it. Write shellcode into
  * the target's address space. Rewrite that thread's RIP to point at the
  * shellcode. Resume. The target's own thread runs the shellcode as its

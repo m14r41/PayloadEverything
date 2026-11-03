@@ -1,6 +1,21 @@
 /*
  * Early Bird APC Injection - T1055.004 variant
  *
+ * Plain English:
+ *   We SPAWN a brand-new process ourselves (CREATE_SUSPENDED), inject
+ *   shellcode into it, queue an APC on its primary thread, then
+ *   resume. The primary thread of a freshly-spawned suspended process
+ *   is guaranteed to enter an alertable wait inside
+ *   ntdll!LdrInitializeThunk before any of the host program's own
+ *   code runs - so the APC fires deterministically, as the very first
+ *   user-mode code in that new process.
+ *
+ * What makes it different from normal APC (apc_injection.cpp):
+ *   Target is a NEW process we created (e.g. notepad.exe), not an
+ *   existing one. Execution is GUARANTEED (unlike the classic spray).
+ *   The spawned process looks like whatever host you picked, and your
+ *   shellcode owns it from the first instruction.
+ *
  * The standard APC injection sprays QueueUserAPC on every thread of an
  * already-running target and hopes one of them hits an alertable wait.
  *

@@ -1,22 +1,74 @@
 # Process Injection
 
-Inject shellcode or DLLs into a running Windows process to execute code in its context. All examples target **x64**.
+Six different ways to get code running inside a target Windows process, plus a local test harness. All examples target **x64**.
 
 **MITRE ATT&CK**: T1055
 
-## Files
+## Techniques at a glance
 
-| File | Technique | ATT&CK Sub |
-|------|-----------|------------|
-| [`classic_injection.cpp`](classic_injection.cpp) | `VirtualAllocEx` + `WriteProcessMemory` + `CreateRemoteThread(entry = shellcode)` | T1055.002 |
-| [`dll_injection.cpp`](dll_injection.cpp) | Write DLL path + `CreateRemoteThread(entry = LoadLibraryA)` | T1055.001 |
-| [`apc_injection.cpp`](apc_injection.cpp) | `VirtualAllocEx` + `WriteProcessMemory` + `QueueUserAPC` on every thread of a live target | T1055.004 |
-| [`thread_hijack.cpp`](thread_hijack.cpp) | `SuspendThread` -> write shellcode -> `SetThreadContext` to swap RIP -> `ResumeThread`. No new thread is created in the target. | T1055.003 |
-| [`early_bird_apc.cpp`](early_bird_apc.cpp) | `CreateProcess SUSPENDED` -> write shellcode -> `QueueUserAPC` on primary thread -> `ResumeThread`. APC fires inside `LdrInitializeThunk`, before the target's own entry point. | T1055.004 variant |
-| [`process_hollowing.cpp`](process_hollowing.cpp) | `CreateProcess SUSPENDED` -> `NtUnmapViewOfSection` -> map payload PE (relocations + imports) -> resume | T1055.012 |
-| [`shellcode_runner.cpp`](shellcode_runner.cpp) | Local shellcode exec: `VirtualAlloc(RW)` -> copy -> `VirtualProtect(RX)` -> run (**NOT remote injection** - self-contained test harness) | T1055 base |
+The six primary techniques solve the same problem - "run my code inside that other process" - but each one takes a different path. Pick based on what matters: stealth, reliability, or how the target shows up in Task Manager.
 
-All injectors (classic + apc) use shellcode built with `EXITFUNC=thread` so the target process survives after the payload runs. Default payload = `WinExec("calc.exe", 0)`.
+| Technique | One-line summary | New thread? | Guaranteed to fire? | ATT&CK |
+|---|---|---|---|---|
+| **Classic** (`classic_injection.cpp`) | Spawn a brand-new thread in the target whose entry point is your shellcode. | yes (visible) | yes | T1055.002 |
+| **DLL Injection** (`dll_injection.cpp`) | Make the target call `LoadLibraryA("your.dll")` inside its own address space. | yes (short-lived) | yes | T1055.001 |
+| **APC** (`apc_injection.cpp`) | Queue your shellcode as an APC on every existing thread. Fires when one hits an alertable wait. | no | no (may never fire) | T1055.004 |
+| **Thread Hijack** (`thread_hijack.cpp`) | Freeze a running thread of the target, swap its RIP to your shellcode, resume. | no | yes | T1055.003 |
+| **Early Bird APC** (`early_bird_apc.cpp`) | Spawn a new process suspended, queue APC on its primary thread, resume. Fires in `LdrInitializeThunk`. | no (reuses the primary) | yes | T1055.004 variant |
+| **Process Hollowing** (`process_hollowing.cpp`) | Spawn a legit-looking host (`svchost.exe`), erase its code, map your full PE into the same address, resume. | no (reuses the primary) | yes | T1055.012 |
+
+Plus `shellcode_runner.cpp` - runs shellcode inside ITSELF, not a remote target. Just a quick harness to validate your shellcode works before trying to inject it anywhere.
+
+## How to pick one
+
+```
+I want the simplest shellcode delivery.
+    -> classic_injection
+
+I have a .DLL payload with full C/C++ logic (reverse shell, hook library, ...).
+    -> dll_injection  (paired with the DLL in ../process-injection-2/)
+
+I want NO new thread to appear in the target (EDR evasion).
+    -> apc_injection         (if willing to roll the dice on alertable waits)
+    -> thread_hijack         (if you want it to actually fire)
+
+I want to spawn a brand-new process that runs my shellcode before anything else.
+    -> early_bird_apc        (the new process looks like notepad.exe, chrome.exe, etc.)
+
+I want the running process to appear in Task Manager as svchost.exe / a system service.
+    -> process_hollowing     (most work to implement, most convincing result)
+
+I just want to test whether my shellcode even works.
+    -> shellcode_runner      (no injection, runs in-process)
+```
+
+## Each file in detail
+
+| File | What it actually does | ATT&CK |
+|------|-----------------------|--------|
+| [`classic_injection.cpp`](classic_injection.cpp) | `VirtualAllocEx` + `WriteProcessMemory` + `CreateRemoteThread(entry = shellcode)`. The visible new thread is the trade-off. | T1055.002 |
+| [`dll_injection.cpp`](dll_injection.cpp) | Write a DLL path into the target, then `CreateRemoteThread(entry = LoadLibraryA)`. The target's own loader does the heavy lifting. | T1055.001 |
+| [`apc_injection.cpp`](apc_injection.cpp) | `QueueUserAPC` your shellcode on every thread of the live target. Any one of them hitting an alertable wait fires it. | T1055.004 |
+| [`thread_hijack.cpp`](thread_hijack.cpp) | `SuspendThread` on an existing target thread, `SetThreadContext` to replace its RIP with the shellcode address, `ResumeThread`. The thread never returns to its original work. | T1055.003 |
+| [`early_bird_apc.cpp`](early_bird_apc.cpp) | `CreateProcess(CREATE_SUSPENDED)` a host (e.g. notepad.exe), `QueueUserAPC` on the primary thread, `ResumeThread`. The APC fires inside `ntdll!LdrInitializeThunk`, before the host's own entry point runs. | T1055.004 variant |
+| [`process_hollowing.cpp`](process_hollowing.cpp) | `CreateProcess SUSPENDED` -> `NtUnmapViewOfSection` -> map YOUR payload PE into the same base (with relocations + imports fixed up) -> `SetThreadContext(entry)` -> `ResumeThread`. | T1055.012 |
+| [`shellcode_runner.cpp`](shellcode_runner.cpp) | Local only: `VirtualAlloc(RW)` -> copy shellcode -> `VirtualProtect(RX)` -> jump. If your shellcode will not pop calc here, it will not pop calc anywhere. | T1055 base |
+
+## The "v2" variants
+
+Each technique above has a `_v2.cpp` sibling. All v2 variants do the SAME thing their v1 does, plus one extra step: they drop a renamed copy of a system binary (usually `cmd.exe`) and patch its `FileDescription` resource string before delivering the payload, so the child process shows up in Task Manager with a custom name instead of looking generic.
+
+| v2 file | Drops on disk as | Shows in Task Manager as |
+|---|---|---|
+| `classic_injection_v2.cpp` | `C:\Users\Public\RevShell_C.exe` | `RevShell-ClassicInj` |
+| `apc_injection_v2.cpp` | `C:\Users\Public\RevShell_A.exe` | `RevShell-APC Inject` |
+| `dll_injection_v2.cpp` | (the identifier is baked into the paired DLL) | `RevShell - WinCmd Proc` |
+| `process_hollowing_v2.cpp` | `C:\Users\Public\RevShell_H.exe` (renamed host) | `RevShell-Hollow Proc` |
+| `shellcode_runner_v2.cpp` | the runner EXE itself, with a VERSIONINFO `.rc` | `RevShell Runner` |
+
+Use v2 when you want a visible, identifiable PoC artefact for a screenshot or report. Use v1 when you just want the technique.
+
+All shellcode-based injectors (classic, apc, thread_hijack, early_bird_apc) use `EXITFUNC=thread` so the target process survives after the payload runs. Default payload = `WinExec("calc.exe", 0)`.
 
 ## Build (Linux cross-compile)
 

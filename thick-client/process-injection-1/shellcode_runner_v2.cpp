@@ -1,6 +1,17 @@
 /*
  * Shellcode Runner v2 - self-identifying runner
  *
+ * Plain English:
+ *   Same local shellcode harness as v1, but the runner EXE itself has a
+ *   custom VERSIONINFO baked in via shellcode_runner_v2.rc so Task
+ *   Manager's Processes tab shows "RevShell Runner" for the runner
+ *   process while it is executing your shellcode.
+ *
+ * What makes it different from v1:
+ *   Same local-run mechanism. The .rc file supplies an identifiable
+ *   name for the test harness itself. Useful when demoing how
+ *   VERSIONINFO patching looks in Task Manager.
+ *
  * Difference from shellcode_runner.cpp:
  *   v1 compiles as generic "runner.exe" with no version info - looks
  *   like any random exe in Task Manager. v2 embeds a .rc file with

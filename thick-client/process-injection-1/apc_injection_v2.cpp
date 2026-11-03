@@ -1,6 +1,15 @@
 /*
  * APC Injection v2 - identifiable child in Task Manager
  *
+ * Plain English:
+ *   Same APC spray as v1, but drops a renamed cmd.exe (RevShell_A.exe)
+ *   with a patched FileDescription first, so the child looks like
+ *   "RevShell-APC Inject" in Task Manager.
+ *
+ * What makes it different from v1:
+ *   Same mechanism, identifiable child. Use for PoC visuals when
+ *   demonstrating APC delivery.
+ *
  * Same spawn-renamed-cmd approach as classic_injection_v2.cpp, but delivered
  * via QueueUserAPC on every thread of the target. First thread to enter
  * alertable state fires the WinExec call.

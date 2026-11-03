@@ -1,6 +1,19 @@
 /*
  * Process Hollowing (RunPE)
  *
+ * Plain English:
+ *   Spawn a legit program (default: svchost.exe) suspended, unmap its
+ *   code image from memory, map YOUR payload PE into that same address
+ *   space, patch up relocations and imports, point the primary thread
+ *   at your payload's entry point, then resume. Task Manager shows the
+ *   process as whatever legit program you spawned, but it is actually
+ *   running your code.
+ *
+ * What makes it different from the others:
+ *   The payload is a COMPLETE PE file (not shellcode), and it runs
+ *   under a legit process name/image path. Highest visual stealth,
+ *   also the most complex to implement (hand-rolled PE loader).
+ *
  * MITRE ATT&CK: T1055.012 - Process Hollowing
  *
  * Chain:

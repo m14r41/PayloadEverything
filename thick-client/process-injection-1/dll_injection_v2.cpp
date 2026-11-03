@@ -1,6 +1,17 @@
 /*
  * DLL Injection v2 - identifiable child in Task Manager
  *
+ * Plain English:
+ *   A thin DLL loader that expects the DLL you hand it to do the
+ *   identifier trick itself (drop renamed cmd.exe + patch
+ *   FileDescription). The injector stays small and reusable; the
+ *   identifier logic lives in the DLL.
+ *
+ * What makes it different from v1:
+ *   Same LoadLibraryA chain. Difference is the pairing - this one is
+ *   designed to be used with revshell_pure_dll.dll (next folder over)
+ *   so the child shell appears as "RevShell - WinCmd Proc".
+ *
  * Difference from dll_injection.cpp:
  *   v1 loads whatever DLL you point at. v2 ships a thin injector that
  *   expects the DLL to do the rename + FileDescription patch itself.

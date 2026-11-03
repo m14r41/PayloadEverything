@@ -1,6 +1,17 @@
 /*
  * DLL Injection - CreateRemoteThread + LoadLibraryA
  *
+ * Plain English:
+ *   Instead of shellcode, we hand the target a path to a .DLL file and
+ *   ask its own loader to load it. Write the DLL's absolute path into
+ *   target memory, then CreateRemoteThread with LoadLibraryA as the
+ *   entry point and the path as the argument.
+ *
+ * What makes it different from classic (T1055.002):
+ *   Payload is a compiled DLL (real C/C++ code, imports, etc.), not raw
+ *   shellcode. Trade-off: the DLL file has to exist on disk somewhere
+ *   the target can read, and LoadLibrary fires ETW ImageLoad events.
+ *
  * MITRE ATT&CK: T1055.001 - Dynamic-link Library Injection
  *
  * Chain:

@@ -1,6 +1,17 @@
 /*
  * Classic Shellcode Injection - CreateRemoteThread + VirtualAllocEx
  *
+ * Plain English:
+ *   The starting-point technique. Allocate memory inside the target
+ *   process, copy shellcode into it, then spawn a brand-new thread in
+ *   the target whose entry point is that shellcode.
+ *
+ * What makes it different from the others:
+ *   Simplest to understand. A NEW thread is visible in the target and
+ *   starts at an unbacked RWX region, which is exactly what EDRs look
+ *   for. Choose this when you just need shellcode to run and stealth is
+ *   not the priority.
+ *
  * MITRE ATT&CK: T1055.002 - Portable Executable Injection
  *               (base: T1055 - Process Injection)
  *
@@ -24,6 +35,17 @@
 
 /*
  * x64 shellcode: WinExec("calc.exe", 0) + ExitThread
+ *
+ * Plain English:
+ *   The starting-point technique. Allocate memory inside the target
+ *   process, copy shellcode into it, then spawn a brand-new thread in
+ *   the target whose entry point is that shellcode.
+ *
+ * What makes it different from the others:
+ *   Simplest to understand. A NEW thread is visible in the target and
+ *   starts at an unbacked RWX region, which is exactly what EDRs look
+ *   for. Choose this when you just need shellcode to run and stealth is
+ *   not the priority.
  *
  * Generated with:
  *   msfvenom -p windows/x64/exec CMD=calc.exe EXITFUNC=thread -f c

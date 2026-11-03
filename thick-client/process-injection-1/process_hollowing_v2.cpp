@@ -1,6 +1,16 @@
 /*
  * Process Hollowing v2 - identifiable hollow in Task Manager
  *
+ * Plain English:
+ *   Same hollowing dance as v1, but we RENAME and PATCH the host
+ *   binary (e.g. svchost.exe -> RevShell_H.exe) before CreateProcess
+ *   SUSPENDED, so Task Manager shows a custom name/description instead
+ *   of "Host Process for Windows Services".
+ *
+ * What makes it different from v1:
+ *   Same loader code; different cosmetic. The hollow runs under a name
+ *   you chose - good for PoC visuals when demonstrating hollowing.
+ *
  * Difference from process_hollowing.cpp:
  *   v1 hollows svchost.exe (or whatever host you specify) with your
  *   payload. The row in Task Manager still shows "svchost.exe" with

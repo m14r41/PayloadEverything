@@ -1,6 +1,16 @@
 /*
  * Classic Shellcode Injection v2 - identifiable child in Task Manager
  *
+ * Plain English:
+ *   Same CreateRemoteThread chain as v1, but FIRST drops a renamed copy
+ *   of cmd.exe (RevShell_C.exe) and patches its FileDescription string
+ *   so Task Manager's Processes tab shows "RevShell-ClassicInj" instead
+ *   of "Windows Command Processor".
+ *
+ * What makes it different from v1:
+ *   Mechanism is identical; the point is the IDENTIFIABLE child process
+ *   that proves you got code execution. Use for PoC screenshots.
+ *
  * Difference from classic_injection.cpp:
  *   v1 spawns plain "calc.exe" via msfvenom - looks identical to any
  *   user-launched calc. v2 pre-renames cmd.exe to a predictable path,

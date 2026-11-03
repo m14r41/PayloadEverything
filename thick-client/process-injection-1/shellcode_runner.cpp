@@ -1,6 +1,16 @@
 /*
  * Shellcode Runner - Execute arbitrary shellcode in local process
  *
+ * Plain English:
+ *   NOT a remote injector. This program runs shellcode inside ITSELF,
+ *   as a quick harness to verify your shellcode actually works before
+ *   you try to inject it into other processes.
+ *
+ * What makes it different from the others:
+ *   No OpenProcess, no WriteProcessMemory, no remote target. Just
+ *   VirtualAlloc(RW), copy, VirtualProtect(RX), jump. If your shellcode
+ *   does not pop calc here, it will not pop calc anywhere else either.
+ *
  * MITRE ATT&CK: T1055 - Process Injection (self-injection variant)
  * Severity: HIGH
  *

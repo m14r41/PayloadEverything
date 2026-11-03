@@ -1,6 +1,18 @@
 /*
  * APC Injection - QueueUserAPC
  *
+ * Plain English:
+ *   Queue our shellcode as an Asynchronous Procedure Call on every
+ *   thread of the target. Windows fires APCs when a thread enters an
+ *   alertable wait (SleepEx, WaitForSingleObjectEx, etc.), so one of
+ *   the threads will eventually run our code without us creating a new
+ *   thread.
+ *
+ * What makes it different from classic (T1055.002):
+ *   No new thread is created in the target, which skips a common EDR
+ *   detection. Trade-off: not guaranteed to fire. If no thread hits an
+ *   alertable wait, the APC just sits in the queue forever.
+ *
  * MITRE ATT&CK: T1055.004 - Asynchronous Procedure Call
  *
  * Fires when any thread of the target enters an alertable wait
@@ -23,6 +35,18 @@
 /*
  * x64 shellcode: WinExec("calc.exe", 0) + ExitThread
  * Generated: msfvenom -p windows/x64/exec CMD=calc.exe EXITFUNC=thread -f c
+ *
+ * Plain English:
+ *   Queue our shellcode as an Asynchronous Procedure Call on every
+ *   thread of the target. Windows fires APCs when a thread enters an
+ *   alertable wait (SleepEx, WaitForSingleObjectEx, etc.), so one of
+ *   the threads will eventually run our code without us creating a new
+ *   thread.
+ *
+ * What makes it different from classic (T1055.002):
+ *   No new thread is created in the target, which skips a common EDR
+ *   detection. Trade-off: not guaranteed to fire. If no thread hits an
+ *   alertable wait, the APC just sits in the queue forever.
  *
  * EXITFUNC=thread so the target process survives after calc fires.
  */
